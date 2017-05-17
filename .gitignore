@@ -10,6 +10,7 @@ local.properties
 .settings/
 .loadpath
 .recommenders
+.project
 
 # MAC related gitignore
 *.DS_Store
