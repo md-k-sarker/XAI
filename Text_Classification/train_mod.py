@@ -201,16 +201,17 @@ with tf.Graph().as_default():
         # Generate batches
         batches = data_helpers.batch_iter(
             list(zip(x_train, y_train)), FLAGS.batch_size, FLAGS.num_epochs)
+
         # Training loop. For each batch...
         for batch in batches:
             x_batch, y_batch = zip(*batch)
             train_step(x_batch, y_batch)
             current_step = tf.train.global_step(sess, global_step)
-            if current_step % FLAGS.evaluate_every == 0:
+            if current_step % FLAGS.evaluate_every == 100:
                 print("\nEvaluation:")
                 dev_step(x_dev, y_dev, writer=dev_summary_writer)
                 print("")
-            if current_step % FLAGS.checkpoint_every == 0:
+            if current_step % FLAGS.checkpoint_every == 100:
                 path = saver.save(sess, checkpoint_prefix,
                                   global_step=current_step)
                 print("Saved model checkpoint to {}\n".format(path))
