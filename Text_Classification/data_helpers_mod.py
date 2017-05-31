@@ -10,6 +10,8 @@ import datetime
 import data_helpers
 from text_cnn import TextCNN
 from tensorflow.contrib import learn
+import pickle
+
 
 
 def clean_str(string):
@@ -33,46 +35,56 @@ def clean_str(string):
     return string.strip().lower()
 
 
-def load_data_and_labels(root_data_folder):
+def load_data_and_labels(root_data_folder,saved_file):
     """
     Loads 20news group dataset data from files, splits the data into words and generates labels.
     Returns split sentences and labels.
     """
-    # Load data from files
-    x_text = []
-    y_label = []
-    counter = 0
-    for folder_name in os.listdir(root_data_folder):
-        if not folder_name.startswith('.'):
-            for file_name in os.listdir(os.path.join(root_data_folder, folder_name)):
+    
+    #If file is saved then just load the file
+    if os.path.isfile(saved_file):
+        x_text, y = load_data(saved_file)
+        return [x_text, y]
+    
+    else:
+        # Load data from files
+        x_text = []
+        y_label = []
+        counter = 0
+        for folder_name in os.listdir(root_data_folder):
+            if not folder_name.startswith('.'):
+                for file_name in os.listdir(os.path.join(root_data_folder, folder_name)):
+    
+                    examples = open(os.path.join(root_data_folder, folder_name, file_name),
+                                    mode='r', encoding='utf-8', errors='ignore').read().strip()
+    
+                    # Split by words
+                    x_text.append(clean_str(examples))
+                    label = [0] * 20
+                    label[counter] = 1
+                    y_label.append(label)
+    
+                counter += 1
+    
+        y = np.concatenate([y_label], 0)
+        save_data([x_text, y], saved_file)
+        return [x_text, y]
 
-                examples = open(os.path.join(root_data_folder, folder_name, file_name),
-                                mode='r', encoding='utf-8', errors='ignore').read().strip()
 
-                # Split by words
-                x_text.append(clean_str(examples))
-                label = [0] * 20
-                label[counter] = 1
-                y_label.append(label)
+def load_data(file_name):
+    with open(os.path.abspath(file_name), 'rb') as f:
+        x_text, y = pickle.load(f)
+        return [x_text, y]
+    
+def save_data(data, file_name):
+    with open(os.path.abspath(file_name),'wb') as f:
+        pickle.dump(data,f)
+    
+#     
+#     with open(os.path.abspath(file_name), 'w+') as f:
+#         pickle.dump(data,f)
+#     
 
-            counter += 1
-
-    y = np.concatenate([y_label], 0)
-    return [x_text, y]
-
-#                 examples = [s.strip() for s in positive_examples]
-#                 negative_examples = list(
-#                     open(negative_data_file, "r").readlines())
-#                 negative_examples = [s.strip() for s in negative_examples]
-#                 # Split by words
-#                 x_text = positive_examples + negative_examples
-#                 x_text = [clean_str(sent) for sent in x_text]
-#                 # Generate labels
-#                 positive_labels = [[0, 1] for _ in positive_examples]
-#                 negative_labels = [[1, 0] for _ in negative_examples]
-#                 y = np.concatenate([positive_labels, negative_labels], 0)
-
-#     return [x_text, y]
 
 
 def batch_iter(data, batch_size, num_epochs, shuffle=True):
@@ -95,53 +107,4 @@ def batch_iter(data, batch_size, num_epochs, shuffle=True):
             yield shuffled_data[start_index:end_index]
 
 
-# # Parameters
-# # ==================================================
-#
-# # Data loading params
-# tf.flags.DEFINE_float("dev_sample_percentage", .1,
-#                       "Percentage of the training data to use for validation")
-# tf.flags.DEFINE_string("root_data_folder", "./data/20news-18828",
-#                        "Data source for the root folder.")
-# tf.flags.DEFINE_string("negative_data_file", "./data/rt-polaritydata/rt-polarity.neg",
-#                        "Data source for the negative data.")
-#
-# # Model Hyperparameters
-# tf.flags.DEFINE_integer("embedding_dim", 128,
-#                         "Dimensionality of character embedding (default: 128)")
-# tf.flags.DEFINE_string("filter_sizes", "3,4,5",
-#                        "Comma-separated filter sizes (default: '3,4,5')")
-# tf.flags.DEFINE_integer(
-#     "num_filters", 128, "Number of filters per filter size (default: 128)")
-# tf.flags.DEFINE_float("dropout_keep_prob", 0.5,
-#                       "Dropout keep probability (default: 0.5)")
-# tf.flags.DEFINE_float("l2_reg_lambda", 0.0,
-#                       "L2 regularization lambda (default: 0.0)")
-#
-# # Training parameters
-# tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
-# tf.flags.DEFINE_integer(
-#     "num_epochs", 200, "Number of training epochs (default: 200)")
-# tf.flags.DEFINE_integer("evaluate_every", 100,
-#                         "Evaluate model on dev set after this many steps (default: 100)")
-# tf.flags.DEFINE_integer("checkpoint_every", 100,
-#                         "Save model after this many steps (default: 100)")
-# tf.flags.DEFINE_integer("num_checkpoints", 5,
-#                         "Number of checkpoints to store (default: 5)")
-# # Misc Parameters
-# tf.flags.DEFINE_boolean("allow_soft_placement", True,
-#                         "Allow device soft device placement")
-# tf.flags.DEFINE_boolean("log_device_placement", False,
-#                         "Log placement of ops on devices")
-#
-# FLAGS = tf.flags.FLAGS
-# FLAGS._parse_flags()
-# print("\nParameters:")
-# for attr, value in sorted(FLAGS.__flags.items()):
-#     print("{}={}".format(attr.upper(), value))
-# print("")
-#
-#
-# x_text, y = load_data_and_labels(FLAGS.root_data_folder)
-# print(len(x_text), len(y))
-# print(x_text[18827], y[18827])
+

@@ -18,6 +18,8 @@ tf.flags.DEFINE_float("dev_sample_percentage", .1,
                       "Percentage of the training data to use for validation")
 tf.flags.DEFINE_string("root_data_folder", "./data/20news-18828",
                        "Data source for the root folder.")
+tf.flags.DEFINE_string("saving_data_file", "./data/preloaded/20news_18828.dt",
+                      "Data will be saved in this file for later reading")
 
 # Model Hyperparameters
 tf.flags.DEFINE_integer("embedding_dim", 128,
@@ -32,9 +34,9 @@ tf.flags.DEFINE_float("l2_reg_lambda", 0.0,
                       "L2 regularization lambda (default: 0.0)")
 
 # Training parameters
-tf.flags.DEFINE_integer("batch_size", 64, "Batch Size (default: 64)")
+tf.flags.DEFINE_integer("batch_size", 100, "Batch Size (default: 100)")
 tf.flags.DEFINE_integer(
-    "num_epochs", 200, "Number of training epochs (default: 200)")
+    "num_epochs", 2, "Number of training epochs (default: 2)")
 tf.flags.DEFINE_integer("evaluate_every", 100,
                         "Evaluate model on dev set after this many steps (default: 100)")
 tf.flags.DEFINE_integer("checkpoint_every", 100,
@@ -60,7 +62,7 @@ print("")
 
 # Load data
 print("Loading data...")
-x_text, y = data_helpers_mod.load_data_and_labels(FLAGS.root_data_folder)
+x_text, y = data_helpers_mod.load_data_and_labels(FLAGS.root_data_folder,FLAGS.saving_data_file)
 
 
 # Build vocabulary
@@ -202,16 +204,17 @@ with tf.Graph().as_default():
         batches = data_helpers.batch_iter(
             list(zip(x_train, y_train)), FLAGS.batch_size, FLAGS.num_epochs)
 
+
         # Training loop. For each batch...
         for batch in batches:
             x_batch, y_batch = zip(*batch)
             train_step(x_batch, y_batch)
             current_step = tf.train.global_step(sess, global_step)
-            if current_step % FLAGS.evaluate_every == 100:
+            if current_step % FLAGS.evaluate_every == 50:
                 print("\nEvaluation:")
                 dev_step(x_dev, y_dev, writer=dev_summary_writer)
                 print("")
-            if current_step % FLAGS.checkpoint_every == 100:
+            if current_step % FLAGS.checkpoint_every == 50:
                 path = saver.save(sess, checkpoint_prefix,
                                   global_step=current_step)
                 print("Saved model checkpoint to {}\n".format(path))

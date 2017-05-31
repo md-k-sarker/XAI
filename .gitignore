@@ -1,3 +1,6 @@
+#Data and run files
+Text_Classification/runs/
+Text_Classification/data/preloaded/
 
 .metadata
 bin/
