@@ -2,4 +2,4 @@
 ```python text_cnn.py```
 
 ## How to visualize in tensorboard
-``` tensorboard --logdir /home/sarker/workspaces/eclipse-neon/XAI/Text_Classification/runs/ --port 8007``` 
+``` tensorboard --logdir /log_dir_path/ --port 8007``` 
