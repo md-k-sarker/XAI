@@ -5,11 +5,11 @@
 
 #SVM Results
 
-```precision    recall  f1-score```
+```precision    recall  f1-score``` <br/>
 ```  0.92      0.91      0.91```
 
 
 #Naive Bayes Results
 
-```precision    recall  f1-score```
+```precision    recall  f1-score``` <br/>
 ```  0.88      0.83      0.84```
