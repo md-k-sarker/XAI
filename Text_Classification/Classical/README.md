@@ -5,12 +5,14 @@
 
 #SVM Results
 
+
 | precision | recall | f1-score |
 | --- | --- |
 | 0.92 | 0.91 | 0.91 |
 
 
 #Naive Bayes Results
+
 
 | precision | recall | f1-score |
 | --- | --- |
