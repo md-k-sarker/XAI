@@ -7,7 +7,7 @@
 SVM results: 
 
 | precision | recall | f1-score |
-| --- | --- |
+| --- | --- | --- |
 | 0.92 | 0.91 | 0.91 |
 
 
@@ -15,5 +15,5 @@ SVM results:
 Naive bayes results: 
 
 | precision | recall | f1-score |
-| --- | --- |
+| --- | --- | --- |
 | 0.88 | 0.83 | 0.84 |
