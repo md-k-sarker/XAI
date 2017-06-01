@@ -4,15 +4,15 @@
 `python classifiers.py`
 
 #SVM Results
-
+SVM results: 
 
 | precision | recall | f1-score |
 | --- | --- |
 | 0.92 | 0.91 | 0.91 |
 
 
-#Naive Bayes Results
-
+#Naive Bayes
+Naive bayes results: 
 
 | precision | recall | f1-score |
 | --- | --- |
