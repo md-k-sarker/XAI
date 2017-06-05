@@ -13,13 +13,15 @@ from data_io import ManipulateData
 def run_test_case():
     '''Get data and shuffle data'''
     manipulateData = ManipulateData()
-    dataMatrix = manipulateData.get_datamatrix_from_csv('winedata.csv')
+    dataMatrix = manipulateData.get_datamatrix_from_csv('winedata_.csv')
     dataMatrix = manipulateData.convert_data_to_float(dataMatrix)
     dataMatrix = manipulateData.shuffle_data(dataMatrix)
 
+    print(dataMatrix.shape)
+
     '''take class and features from the data'''
     classes = dataMatrix[:, 0]
-    features = dataMatrix[:, range(1, 14)]
+    features = dataMatrix[:, range(1, dataMatrix.shape[1])]
 
     '''get Normalized inputFeature as matrix'''
     inputFeatures = manipulateData.get_normalized_data(features)
@@ -33,12 +35,17 @@ def run_test_case():
     trainData, trainOutput, validationData, validationOutput, testData, testOutput = manipulateData.split_train_validate_and_test_data(
         inputFeatures, outputVector, .6, .2, .2)
 
+    print('outputVector: ', outputVector.shape)
+    print('inputFeatures: ', inputFeatures.shape)
+
+    print('trainData: ', trainData.shape)
+    print('trainOutput: ', trainOutput.shape)
     '''set train parameters'''
     maxIteration = 20
     minError = 1e-2
     learningRate = 0.3
     noOfHiddenLayer = 1
-    hln = 50
+    hln = 5
 
     '''initilize neural network'''
     neuralnetwork = DNN(classes, features, noOfHiddenLayer, hln)

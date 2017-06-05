@@ -16,10 +16,10 @@ import data_helpers_mod
 # Data loading params
 tf.flags.DEFINE_float("dev_sample_percentage", .1,
                       "Percentage of the training data to use for validation")
-tf.flags.DEFINE_string("root_data_folder", "./data/20news-18828",
+tf.flags.DEFINE_string("root_data_folder", "../../data/20news-18828",
                        "Data source for the root folder.")
-tf.flags.DEFINE_string("saving_data_file", "./data/preloaded/20news_18828.dt",
-                      "Data will be saved in this file for later reading")
+tf.flags.DEFINE_string("saving_data_file", "../../data/preloaded/20news_18828.dt",
+                       "Data will be saved in this file for later reading")
 
 # Model Hyperparameters
 tf.flags.DEFINE_integer("embedding_dim", 128,
@@ -62,7 +62,8 @@ print("")
 
 # Load data
 print("Loading data...")
-x_text, y = data_helpers_mod.load_data_and_labels(FLAGS.root_data_folder,FLAGS.saving_data_file)
+x_text, y = data_helpers_mod.load_data_and_labels(
+    FLAGS.root_data_folder, FLAGS.saving_data_file)
 
 
 # Build vocabulary
@@ -203,7 +204,6 @@ with tf.Graph().as_default():
         # Generate batches
         batches = data_helpers.batch_iter(
             list(zip(x_train, y_train)), FLAGS.batch_size, FLAGS.num_epochs)
-
 
         # Training loop. For each batch...
         for batch in batches:

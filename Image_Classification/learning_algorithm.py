@@ -121,6 +121,8 @@ class DNN:
 
                 '''calculate output for each layer'''
                 for l, W in zip(range(1, self.totalLayerSize), self.WEIGHT):
+                    print(W.shape)
+                    print(OUTPUT[l - 1].shape)
                     input = np.dot(W, OUTPUT[l - 1])
                     output = np.array([getSigmoid(val) for val in input])
                     OUTPUT.append(output)
@@ -158,6 +160,7 @@ class DNN:
                 finalLayerOutputs.append(output)
 
             '''average over inputs'''
+            print(inputVector.shape, inputVector)
             avgCostPerIteration = costPerIteration / len(inputVector)
 
             costsPerIteration.append(avgCostPerIteration)
@@ -218,4 +221,17 @@ def getSigmoid(x):
 
 if __name__ == '__main__':
     print('test')
+    classes = [0, 1, 1, 0]
+    features = [[0, 0], [0, 1], [1, 0], [1, 1]]
+    trainData = np.array(features)
+    trainOutput = np.array(classes)
+    noOfHiddenLayer = 2
+    maxIteration = 10
+    learningRate = 1e-2
+    minError = 1e-5
+    hln = 2
+
+    dnn = DNN(classes, features, noOfHiddenLayer, hln)
+    dnn.train_model(
+        trainData, trainOutput, maxIteration, minError, learningRate, True)
     pass

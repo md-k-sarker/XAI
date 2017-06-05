@@ -1,6 +1,7 @@
 #Data and run files
-Text_Classification/runs/
-Text_Classification/data/preloaded/
+data/glove.6B
+data/preloaded
+Text_Classification/CNN/runs/
 
 .metadata
 bin/
