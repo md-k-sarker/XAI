@@ -79,7 +79,7 @@ y_val = labels[-nb_validation_samples:]
 
 # Embedding Layer
 embeddings_index = {}
-f = open(os.path.join(GLOVE_DIR, 'glove.6B.100d.txt'))
+f = open(os.path.join(GLOVE_DIR, 'glove.6B.100d.txt'), encoding='utf-8')
 for line in f:
     values = line.split()
     word = values[0]
@@ -122,5 +122,5 @@ model.compile(loss='categorical_crossentropy',
               metrics=['acc'])
 
 # happy learning!
-# model.fit(x_train, y_train, validation_data=(x_val, y_val),
-#           epochs=2, batch_size=128)
+model.fit(x_train, y_train, validation_data=(x_val, y_val),
+          epochs=2, batch_size=128)
