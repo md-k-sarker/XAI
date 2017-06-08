@@ -7,11 +7,7 @@ import numpy as np
 import os
 import time
 import datetime
-import data_helpers
-from text_cnn import TextCNN
-from tensorflow.contrib import learn
 import pickle
-
 
 
 def clean_str(string):
@@ -35,17 +31,17 @@ def clean_str(string):
     return string.strip().lower()
 
 
-def load_data_and_labels(root_data_folder,saved_file):
+def load_data_and_labels(root_data_folder, saved_file):
     """
     Loads 20news group dataset data from files, splits the data into words and generates labels.
     Returns split sentences and labels.
     """
-    
-    #If file is saved then just load the file
+
+    # If file is saved then just load the file
     if os.path.isfile(saved_file):
         x_text, y = load_data(saved_file)
         return [x_text, y]
-    
+
     else:
         # Load data from files
         x_text = []
@@ -54,18 +50,18 @@ def load_data_and_labels(root_data_folder,saved_file):
         for folder_name in os.listdir(root_data_folder):
             if not folder_name.startswith('.'):
                 for file_name in os.listdir(os.path.join(root_data_folder, folder_name)):
-    
+
                     examples = open(os.path.join(root_data_folder, folder_name, file_name),
                                     mode='r', encoding='utf-8', errors='ignore').read().strip()
-    
+
                     # Split by words
                     x_text.append(clean_str(examples))
                     label = [0] * 20
                     label[counter] = 1
                     y_label.append(label)
-    
+
                 counter += 1
-    
+
         y = np.concatenate([y_label], 0)
         save_data([x_text, y], saved_file)
         return [x_text, y]
@@ -75,11 +71,11 @@ def load_data(file_name):
     with open(os.path.abspath(file_name), 'rb') as f:
         x_text, y = pickle.load(f)
         return [x_text, y]
-    
+
+
 def save_data(data, file_name):
-    with open(os.path.abspath(file_name),'wb') as f:
-        pickle.dump(data,f)
-    
+    with open(os.path.abspath(file_name), 'wb') as f:
+        pickle.dump(data, f)
 
 
 def batch_iter(data, batch_size, num_epochs, shuffle=True):
@@ -100,6 +96,3 @@ def batch_iter(data, batch_size, num_epochs, shuffle=True):
             start_index = batch_num * batch_size
             end_index = min((batch_num + 1) * batch_size, data_size)
             yield shuffled_data[start_index:end_index]
-
-
-

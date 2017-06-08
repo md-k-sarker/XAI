@@ -6,9 +6,9 @@ import os
 import time
 import datetime
 import data_helpers
-from text_cnn_mod import TextCNN
+from text_cnn import TextCNN
 from tensorflow.contrib import learn
-import data_helpers_mod
+
 
 # Parameters
 # ==================================================
@@ -62,7 +62,7 @@ print("")
 
 # Load data
 print("Loading data...")
-x_text, y = data_helpers_mod.load_data_and_labels(
+x_text, y = data_helpers.load_data_and_labels(
     FLAGS.root_data_folder, FLAGS.saving_data_file)
 
 

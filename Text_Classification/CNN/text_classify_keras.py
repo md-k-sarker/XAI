@@ -107,7 +107,13 @@ embedding_layer = Embedding(len(word_index) + 1,
 # Training
 sequence_input = Input(shape=(MAX_SEQUENCE_LENGTH,), dtype='int32')
 embedded_sequences = embedding_layer(sequence_input)
+
 x = Conv1D(128, 5, activation='relu')(embedded_sequences)
+
+print('sequence_input: ', sequence_input)
+print('embedded_sequences: ', embedded_sequences)
+print('x: ', x)
+
 x = MaxPooling1D(5)(x)
 x = Conv1D(128, 5, activation='relu')(x)
 x = MaxPooling1D(5)(x)
