@@ -7,13 +7,14 @@ Created on Jun 2, 2017
 import os
 import sys
 import numpy as np
-from keras import *
-from keras.preprocessing.text import Tokenizer
-from keras.preprocessing.sequence import pad_sequences
-from keras.utils import to_categorical
-from keras.layers import Dense, Input, Flatten
-from keras.layers import Conv1D, MaxPooling1D, Embedding
-from keras.models import Model
+import tensorflow as tf
+from tensorflow.contrib.keras.python import keras
+from tensorflow.contrib.keras.python.keras.preprocessing.text import Tokenizer
+from tensorflow.contrib.keras.python.keras.preprocessing.sequence import pad_sequences
+from tensorflow.contrib.keras.python.keras.utils import to_categorical
+from tensorflow.contrib.keras.python.keras.layers import Dense, Input, Flatten
+from tensorflow.contrib.keras.python.keras.layers import Conv1D, MaxPooling1D, Embedding
+from tensorflow.contrib.keras.python.keras.models import Model
 
 
 # Data directory
