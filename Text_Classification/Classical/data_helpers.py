@@ -51,20 +51,20 @@ def load_data_and_labels(root_data_folder, saved_file):
         for folder_name in os.listdir(root_data_folder):
             if not folder_name.startswith('.'):
                 for file_name in os.listdir(os.path.join(root_data_folder, folder_name)):
+                    if not file_name.startswith('.'):
+                        examples = open(os.path.join(root_data_folder, folder_name, file_name),
+                                        mode='r', encoding='utf-8', errors='ignore').read().strip()
 
-                    examples = open(os.path.join(root_data_folder, folder_name, file_name),
-                                    mode='r', encoding='utf-8', errors='ignore').read().strip()
-
-                    # Split by words
-                    x_text.append(clean_str(examples))
-                    label = [0] * 20
-                    label[counter] = 1
-                    y_label.append(label)
-                    y_textual_label.append(folder_name)
+                        # Split by words
+                        x_text.append(clean_str(examples))
+                        label = [0] * 20
+                        label[counter] = 1
+                        y_label.append(label)
+                        y_textual_label.append(folder_name)
                 counter += 1
 
         y = np.concatenate([y_label], 0)
-        save_data([x_text, y, y_label], saved_file)
+        save_data([x_text, y, y_textual_label], saved_file)
         return [x_text, y, y_textual_label]
 
 
