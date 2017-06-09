@@ -53,14 +53,17 @@ def bow(sentence, words, show_details=False):
     sentence_words = clean_up_sentence(sentence)
     # bag of words
     bag = [0] * len(words)
+    bag_words = [0] * len(words)
+
     for s in sentence_words:
         for i, w in enumerate(words):
             if w == s:
                 bag[i] = 1
+                bag_words[i] = s
                 if show_details:
                     print("found in bag: %s" % w)
 
-    return(np.array(bag))
+    return(np.array(bag), np.array(bag_words))
 
 # compute sigmoid nonlinearity
 
@@ -76,8 +79,11 @@ def sigmoid_output_to_derivative(output):
     return output * (1 - output)
 
 
+activation_threshold = 0.6
+
+
 def estimate(document, show_details=False):
-    x = bow(document.lower(), words, show_details)
+    x, bag_words = bow(document.lower(), words, show_details)
     if show_details:
         print("document:", document, "\n bow:", x)
     # input layer is our bag of words
@@ -88,6 +94,44 @@ def estimate(document, show_details=False):
     l2 = sigmoid(np.dot(l1, synapse_1))
     # output layer
     l3 = sigmoid(np.dot(l2, synapse_2))
+#     print('l0: ', l0.shape, np.amax(l0), np.argmax(l0))
+#     print('l1: ', l1.shape, np.amax(l1), np.argmax(l1))
+#     print('l2: ', l2.shape, np.amax(l2), np.argmax(l2))
+#     print('l3: ', l3.shape, np.amax(l3), np.argmax(l3))
+
+    '''i, j = np.unravel_index(synapse_2.argmax(), synapse_2.shape)'''
+
+    synapse_0_max_i, synapse_0_max_j = np.where(synapse_0 == synapse_0.max())
+    synapse_1_max_i, synapse_1_max_j = np.where(synapse_1 == synapse_1.max())
+    synapse_2_max_i, synapse_2_max_j = np.where(synapse_2 == synapse_2.max())
+
+    synapse_0_higher_i, synapse_0_higher_j = np.where(
+        synapse_0 >= np.mean(synapse_0))
+
+    # print('influential words: ',  synapse_0_max_i, synapse_0_max_j,
+    #     bag_words[synapse_0_max_i], )
+    words_dict = {}
+    for i, j in zip(synapse_0_higher_i, synapse_0_higher_j):
+        if(bag_words[i] != '0'):
+            words_dict[synapse_0[i, j]] = bag_words[i]
+            # print(bag_words[i])
+
+    sorted_x = sorted(words_dict.items(), key=words_dict.get(0), reverse=True)
+    print('influential words: ')
+    for i, j in sorted_x:
+        print(' word: ', j, ' \tscore: ', i)
+
+#     print('synapse_2: ', synapse_2.shape, synapse_2.ndim, np.amax(
+#         synapse_2), np.argmax(synapse_2))
+#     print('val: ', synapse_2[0, 2])
+#     print('synapse_1: ', np.amax(synapse_1), np.argmax(synapse_1))
+#     print('synapse_2: ', np.amax(synapse_2), np.argmax(synapse_2))
+    l0_actv = [index for index, x in enumerate(l0) if x > activation_threshold]
+    l1_actv = [index for index, x in enumerate(l1) if x > activation_threshold]
+    l2_actv = [index for index, x in enumerate(l2) if x > activation_threshold]
+#     print(l0_actv)
+#     print(l1_actv)
+#     print(l2_actv)
     return l3
 
 
@@ -123,7 +167,7 @@ test_doc_2 = open(
 test_doc_3 = open(
     '/Users/sarker/WorkSpaces/EclipseNeon/XAI/data/20news-18828_3_class/soc.religion.christian/20599', encoding='utf-8').read()
 classify(test_doc_1,  show_details=False)
-print()
-classify(test_doc_2,  show_details=False)
-print()
-classify(test_doc_3, show_details=False)
+# print()
+# classify(test_doc_2,  show_details=False)
+# print()
+# classify(test_doc_3, show_details=False)

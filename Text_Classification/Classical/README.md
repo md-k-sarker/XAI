@@ -1,3 +1,23 @@
+#Influential words in neural network
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #SVM and Naive Bayes algorithms is used to classify the 20-news group dataset.
 
 ## How to run
@@ -17,3 +37,6 @@ Naive bayes results:
 | precision | recall | f1-score |
 | --- | --- | --- |
 | 0.88 | 0.83 | 0.84 |
+
+
+
