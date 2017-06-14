@@ -37,33 +37,42 @@ if os.path.isfile(saving_words_data_file):
         words = pickle.load(f)
 
 
-def clean_up_sentence(sentence):
+def clean_up_document(document):
     # tokenize the pattern
-    sentence_words = nltk.word_tokenize(sentence)
+    document_words = nltk.word_tokenize(document)
     # stem each word
-    sentence_words = [stemmer.stem(word.lower()) for word in sentence_words]
-    return sentence_words
-
-# return bag of words array: 0 or 1 for each word in the bag that exists
-# in the sentence
+    document_words = [stemmer.stem(word.lower()) for word in document_words]
+    return document_words
 
 
-def bow(sentence, words, show_details=False):
+'''return bag of words array: 0 or 1 for each word in the bag that exists in the document'''
+
+
+def bow(document, words, show_details=False):
     # tokenize the pattern
-    sentence_words = clean_up_sentence(sentence)
-    # bag of words
-    bag = [0] * len(words)
-    bag_words = [0] * len(words)
+    document_words = clean_up_document(document)
+    print('document_tokens: ', document_words)
+    print('####################')
 
-    for s in sentence_words:
+    # bag of words
+    bag_0_1_vector = [0] * len(words)
+    bag_words_vector = [0] * len(words)
+
+    for s in document_words:
         for i, w in enumerate(words):
             if w == s:
-                bag[i] = 1
-                bag_words[i] = s
+                bag_0_1_vector[i] = 1
+                bag_words_vector[i] = s
                 if show_details:
                     print("found in bag: %s" % w)
 
-    return(np.array(bag), np.array(bag_words))
+    #print('bag_0_1_vector: ', bag_0_1_vector)
+
+    bag_words = [p for p in bag_words_vector if (p != 0)]
+    print('bag_of_words: ', bag_words, '\n', bag_words_vector)
+    print('####################')
+
+    return(np.array(bag_0_1_vector), np.array(bag_words_vector), np.array(bag_words))
 
 # compute sigmoid nonlinearity
 
@@ -83,9 +92,15 @@ activation_threshold = 0.6
 
 
 def estimate(document, show_details=False):
-    x, bag_words = bow(document.lower(), words, show_details)
+    bag_0_1_vector, bag_words_vector, bag_words = bow(
+        document.lower(), words, show_details)
+
+    # input
+    x = bag_0_1_vector
     if show_details:
         print("document:", document, "\n bow:", x)
+
+    '''Estimate the class'''
     # input layer is our bag of words
     l0 = x
     # matrix multiplication of input and hidden layer1
@@ -94,26 +109,29 @@ def estimate(document, show_details=False):
     l2 = sigmoid(np.dot(l1, synapse_1))
     # output layer
     l3 = sigmoid(np.dot(l2, synapse_2))
+
+    '''Try to get explanation'''
+
 #     print('l0: ', l0.shape, np.amax(l0), np.argmax(l0))
 #     print('l1: ', l1.shape, np.amax(l1), np.argmax(l1))
 #     print('l2: ', l2.shape, np.amax(l2), np.argmax(l2))
 #     print('l3: ', l3.shape, np.amax(l3), np.argmax(l3))
 
-    '''i, j = np.unravel_index(synapse_2.argmax(), synapse_2.shape)'''
-
-    synapse_0_max_i, synapse_0_max_j = np.where(synapse_0 == synapse_0.max())
-    synapse_1_max_i, synapse_1_max_j = np.where(synapse_1 == synapse_1.max())
-    synapse_2_max_i, synapse_2_max_j = np.where(synapse_2 == synapse_2.max())
+#     '''i, j = np.unravel_index(synapse_2.argmax(), synapse_2.shape)'''
+#
+#     synapse_0_max_i, synapse_0_max_j = np.where(synapse_0 == synapse_0.max())
+#     synapse_1_max_i, synapse_1_max_j = np.where(synapse_1 == synapse_1.max())
+#     synapse_2_max_i, synapse_2_max_j = np.where(synapse_2 == synapse_2.max())
+#     print('influential words: ',  synapse_0_max_i, synapse_0_max_j,
+#           bag_words_vector[synapse_0_max_i], )
 
     synapse_0_higher_i, synapse_0_higher_j = np.where(
         synapse_0 >= np.mean(synapse_0))
 
-    # print('influential words: ',  synapse_0_max_i, synapse_0_max_j,
-    #     bag_words[synapse_0_max_i], )
     words_dict = {}
     for i, j in zip(synapse_0_higher_i, synapse_0_higher_j):
-        if(bag_words[i] != '0'):
-            words_dict[synapse_0[i, j]] = bag_words[i]
+        if(bag_words_vector[i] != '0'):
+            words_dict[synapse_0[i, j]] = bag_words_vector[i]
             # print(bag_words[i])
 
     sorted_x = sorted(words_dict.items(), key=words_dict.get(0), reverse=True)
@@ -162,6 +180,9 @@ def classify(document, show_details=False):
 
 test_doc_1 = open(
     '/Users/sarker/WorkSpaces/EclipseNeon/XAI/data/20news-18828_3_class/comp.graphics/38343', encoding='utf-8').read()
+print('####################')
+print('raw document:\n', test_doc_1)
+print('####################')
 test_doc_2 = open(
     '/Users/sarker/WorkSpaces/EclipseNeon/XAI/data/20news-18828_3_class/rec.autos/102800', encoding='utf-8').read()
 test_doc_3 = open(
