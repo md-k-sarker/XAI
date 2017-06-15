@@ -231,12 +231,15 @@ def estimate(document, show_details=False):
         print("document:", document, "\n bow:", x)
     # input layer is our bag of words
     l0 = x
-    # matrix multiplication of input and hidden layer1
+    # matrix multiplication of input and input layer1
     l1 = sigmoid(np.dot(l0, synapse_0))
-    # matrix multiplication of hidden layer1 and hidden layer2
+    # matrix multiplication of input layer1 and hidden layer1
     l2 = sigmoid(np.dot(l1, synapse_1))
+    # matrix multiplication of hidden layer1 and hidden layer2
     # output layer
     l3 = sigmoid(np.dot(l2, synapse_2))
+    # output layer
+    #l4 = sigmoid(np.dot(l3, synapse_3))
     return l3
 
 

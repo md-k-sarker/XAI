@@ -69,7 +69,9 @@ def bow(document, words, show_details=False):
     #print('bag_0_1_vector: ', bag_0_1_vector)
 
     bag_words = [p for p in bag_words_vector if (p != 0)]
-    print('bag_of_words: ', bag_words, '\n', bag_words_vector)
+    print('bag_of_words: ', bag_words)
+    print('####################')
+    print('bag_words_vector', bag_words_vector)
     print('####################')
 
     return(np.array(bag_0_1_vector), np.array(bag_words_vector), np.array(bag_words))
@@ -111,11 +113,19 @@ def estimate(document, show_details=False):
     l3 = sigmoid(np.dot(l2, synapse_2))
 
     '''Try to get explanation'''
-
-#     print('l0: ', l0.shape, np.amax(l0), np.argmax(l0))
-#     print('l1: ', l1.shape, np.amax(l1), np.argmax(l1))
-#     print('l2: ', l2.shape, np.amax(l2), np.argmax(l2))
-#     print('l3: ', l3.shape, np.amax(l3), np.argmax(l3))
+    '''analyze neurons'''
+    print('l0: ', l0.shape, np.amax(l0), np.argmax(l0))
+    print('l1: ', l1.shape, np.amax(l1), np.argmax(l1))
+    print('l2: ', l2.shape, np.amax(l2), np.argmax(l2))
+    print('l3: ', l3.shape, np.amax(l3), np.argmax(l3))
+    l0_actv = [index for index, x in enumerate(l0) if x > activation_threshold]
+    l1_actv = [index for index, x in enumerate(l1) if x > activation_threshold]
+    l2_actv = [index for index, x in enumerate(l2) if x > activation_threshold]
+    l3_actv = [index for index, x in enumerate(l3) if x > activation_threshold]
+    print('l0_actv: ', l0_actv)
+    print('l1_actv: ', l1_actv)
+    print('l2_actv: ', l2_actv)
+    print('l3_actv: ', l3_actv)
 
 #     '''i, j = np.unravel_index(synapse_2.argmax(), synapse_2.shape)'''
 #
@@ -125,31 +135,40 @@ def estimate(document, show_details=False):
 #     print('influential words: ',  synapse_0_max_i, synapse_0_max_j,
 #           bag_words_vector[synapse_0_max_i], )
 
+    '''analyze synapses/weights'''
+    '''Synapse_0_highest_weights'''
     synapse_0_higher_i, synapse_0_higher_j = np.where(
         synapse_0 >= np.mean(synapse_0))
+    '''Synapse_1_highest_weights'''
+    synapse_1_higher_i, synapse_1_higher_j = np.where(
+        synapse_1 >= np.mean(synapse_1))
+    '''Synapse_2_highest_weights'''
+    synapse_2_higher_i, synapse_2_higher_j = np.where(
+        synapse_2 >= np.mean(synapse_2))
 
+    '''The words which is giving more influence in the input layer.
+    The words are in the global word_vectors. These words may not appear in the input document'''
+    # word_dict = {key, value}
+    # key = weight, value = word
     words_dict = {}
     for i, j in zip(synapse_0_higher_i, synapse_0_higher_j):
-        if(bag_words_vector[i] != '0'):
-            words_dict[synapse_0[i, j]] = bag_words_vector[i]
-            # print(bag_words[i])
+        # if(bag_words_vector[i] != '0'):
+        words_dict[synapse_0[i, j]] = bag_words_vector[i]
+        # print(bag_words[i])
 
     sorted_x = sorted(words_dict.items(), key=words_dict.get(0), reverse=True)
-    print('influential words: ')
-    for i, j in sorted_x:
-        print(' word: ', j, ' \tscore: ', i)
+    print('influential words from global word_vector: ')
+    with open('stats.txt', 'w', encoding='utf-8') as f:
+        for i, j in sorted_x:
+            #print(' word: ', j, ' \tscore: ', i)
+            f.write(' word: ' + str(j) + ' \tscore: ' + str(i) + '\n')
 
 #     print('synapse_2: ', synapse_2.shape, synapse_2.ndim, np.amax(
 #         synapse_2), np.argmax(synapse_2))
 #     print('val: ', synapse_2[0, 2])
 #     print('synapse_1: ', np.amax(synapse_1), np.argmax(synapse_1))
 #     print('synapse_2: ', np.amax(synapse_2), np.argmax(synapse_2))
-    l0_actv = [index for index, x in enumerate(l0) if x > activation_threshold]
-    l1_actv = [index for index, x in enumerate(l1) if x > activation_threshold]
-    l2_actv = [index for index, x in enumerate(l2) if x > activation_threshold]
-#     print(l0_actv)
-#     print(l1_actv)
-#     print(l2_actv)
+
     return l3
 
 
@@ -188,7 +207,7 @@ test_doc_2 = open(
 test_doc_3 = open(
     '/Users/sarker/WorkSpaces/EclipseNeon/XAI/data/20news-18828_3_class/soc.religion.christian/20599', encoding='utf-8').read()
 classify(test_doc_1,  show_details=False)
-# print()
-# classify(test_doc_2,  show_details=False)
-# print()
-# classify(test_doc_3, show_details=False)
+print()
+classify(test_doc_2,  show_details=False)
+print()
+classify(test_doc_3, show_details=False)
