@@ -88,7 +88,7 @@ def save_data(data, file_name):
 
 
 # Load data
-root_data_folder = '../../data/20news-18828'
+root_data_folder = '../../data/20news-18828/train'
 saving_data_file = '../../data/preloaded/20news_18828.dt'
 saving_words_data_file = '../../data/preloaded/20news_all_words.dt'
 saving_bag_of_words_data_file = '../../data/preloaded/20news_bag_of_words.dt'

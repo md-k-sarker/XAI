@@ -51,8 +51,9 @@ def clean_up_document(document):
 def bow(document, words, show_details=False):
     # tokenize the pattern
     document_words = clean_up_document(document)
-    print('document_tokens: ', document_words)
-    print('####################')
+    if show_details:
+        print('document_tokens: ', document_words)
+        print('####################')
 
     # bag of words
     bag_0_1_vector = [0] * len(words)
@@ -69,10 +70,11 @@ def bow(document, words, show_details=False):
     #print('bag_0_1_vector: ', bag_0_1_vector)
 
     bag_words = [p for p in bag_words_vector if (p != 0)]
-    print('bag_of_words: ', bag_words)
-    print('####################')
-    print('bag_words_vector', bag_words_vector)
-    print('####################')
+    if show_details:
+        print('bag_of_words: ', bag_words)
+        print('####################')
+        print('bag_words_vector', bag_words_vector)
+        print('####################')
 
     return(np.array(bag_0_1_vector), np.array(bag_words_vector), np.array(bag_words))
 
@@ -91,6 +93,11 @@ def sigmoid_output_to_derivative(output):
 
 
 activation_threshold = 0.6
+
+l0_activations = []
+l1_activations = []
+l2_activations = []
+l3_activations = []
 
 
 def estimate(document, show_details=False):
@@ -118,7 +125,8 @@ def estimate(document, show_details=False):
     print('l1: ', l1.shape, np.amax(l1), np.argmax(l1))
     print('l2: ', l2.shape, np.amax(l2), np.argmax(l2))
     print('l3: ', l3.shape, np.amax(l3), np.argmax(l3))
-    l0_actv = [index for index, x in enumerate(l0) if x > activation_threshold]
+    l0_actv = [index for index, x in enumerate(
+        l0) if x > (activation_threshold + .15)]
     l1_actv = [index for index, x in enumerate(l1) if x > activation_threshold]
     l2_actv = [index for index, x in enumerate(l2) if x > activation_threshold]
     l3_actv = [index for index, x in enumerate(l3) if x > activation_threshold]
@@ -126,14 +134,17 @@ def estimate(document, show_details=False):
     print('l1_actv: ', l1_actv)
     print('l2_actv: ', l2_actv)
     print('l3_actv: ', l3_actv)
+    l0_activations.extend('\n')
+    l0_activations.extend(l0_actv)
 
-#     '''i, j = np.unravel_index(synapse_2.argmax(), synapse_2.shape)'''
-#
-#     synapse_0_max_i, synapse_0_max_j = np.where(synapse_0 == synapse_0.max())
-#     synapse_1_max_i, synapse_1_max_j = np.where(synapse_1 == synapse_1.max())
-#     synapse_2_max_i, synapse_2_max_j = np.where(synapse_2 == synapse_2.max())
-#     print('influential words: ',  synapse_0_max_i, synapse_0_max_j,
-#           bag_words_vector[synapse_0_max_i], )
+    l1_activations.extend('\n')
+    l1_activations.extend(l1_actv)
+
+    l2_activations.extend('\n')
+    l2_activations.extend(l2_actv)
+
+    l3_activations.extend('\n')
+    l3_activations.extend(l3_actv)
 
     '''analyze synapses/weights'''
     '''Synapse_0_highest_weights'''
@@ -157,24 +168,18 @@ def estimate(document, show_details=False):
         # print(bag_words[i])
 
     sorted_x = sorted(words_dict.items(), key=words_dict.get(0), reverse=True)
-    print('influential words from global word_vector: ')
-    with open('stats.txt', 'w', encoding='utf-8') as f:
+    if show_details:
+        print('influential words from global word_vector: ')
+    with open('stats_.txt', 'w', encoding='utf-8') as f:
         for i, j in sorted_x:
-            #print(' word: ', j, ' \tscore: ', i)
+            if show_details:
+                print(' word: ', j, ' \tscore: ', i)
             f.write(' word: ' + str(j) + ' \tscore: ' + str(i) + '\n')
-
-#     print('synapse_2: ', synapse_2.shape, synapse_2.ndim, np.amax(
-#         synapse_2), np.argmax(synapse_2))
-#     print('val: ', synapse_2[0, 2])
-#     print('synapse_1: ', np.amax(synapse_1), np.argmax(synapse_1))
-#     print('synapse_2: ', np.amax(synapse_2), np.argmax(synapse_2))
 
     return l3
 
 
 # probability threshold
-
-
 ERROR_THRESHOLD = 0
 
 # load our calculated synapse values
@@ -192,7 +197,7 @@ def classify(document, show_details=False):
     results = [[i, r] for i, r in enumerate(results) if r > ERROR_THRESHOLD]
     results.sort(key=lambda x: x[1], reverse=True)
     return_results = [[classes[r[0]], r[1]] for r in results]
-    print("%s \n classification: %s" %
+    print("first 5 words from document: %s \nclassification: %s" %
           (document.split(' ')[:5], return_results))
     return return_results
 
@@ -206,8 +211,41 @@ test_doc_2 = open(
     '/Users/sarker/WorkSpaces/EclipseNeon/XAI/data/20news-18828_3_class/rec.autos/102800', encoding='utf-8').read()
 test_doc_3 = open(
     '/Users/sarker/WorkSpaces/EclipseNeon/XAI/data/20news-18828_3_class/soc.religion.christian/20599', encoding='utf-8').read()
-classify(test_doc_1,  show_details=False)
-print()
-classify(test_doc_2,  show_details=False)
-print()
-classify(test_doc_3, show_details=False)
+test_file_dir = '/Users/sarker/WorkSpaces/EclipseNeon/XAI/data/20news-18828'
+
+for folder_name in os.listdir(test_file_dir):
+    if not folder_name.startswith('.'):
+        for file_name in os.listdir(os.path.join(root_data_folder, folder_name)):
+            if not file_name.startswith('.'):
+                document = open(os.path.join(test_file_dir, folder_name, file_name),
+                                mode='r', encoding='utf-8', errors='ignore').read()
+
+                classify(document,  show_details=False)
+                print()
+
+
+with open('stats.txt', 'w', encoding='utf-8') as f:
+    f.write('l0:  ')
+    for l0_a in l0_activations:
+        print(l0_a)
+        if l0_a == '\n':
+            f.write('\n')
+        f.write(str(l0_a))
+    f.write('\n\nl1:  ')
+    for l1_a in l1_activations:
+        print(l1_a)
+        if l1_a == '\n':
+            f.write('\n')
+        f.write(str(l1_a))
+    f.write('\n\nl2:  ')
+    for l2_a in l2_activations:
+        print(l2_a)
+        if l2_a == '\n':
+            f.write('\n')
+        f.write(str(l2_a))
+    f.write('\n\nl3:  ')
+    for l3_a in l3_activations:
+        print(l3_a)
+        if l3_a == '\n':
+            f.write('\n')
+        f.write(str(l3_a))
