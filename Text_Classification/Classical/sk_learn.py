@@ -7,6 +7,9 @@ Created on Jun 16, 2017
 import numpy as np
 from sklearn.neural_network import MLPClassifier
 from sklearn.externals import joblib
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
+from sklearn.feature_selection import VarianceThreshold
 
 # Load Dataset
 # use natural language toolkit
@@ -258,43 +261,10 @@ print(len(documents), " documents")
 print(len(classes), " classes", classes)
 print(len(words), " unique stemmed words")
 
-# training data
-training, output = convert_training_documents_to_vector()
-X_training = np.array(training)
-y_training = np.array(output)
-
-no_of_hidden_neurons = ((len(X_training[0])))
-
-
-def train_NN():
-    start_time = time.time()
-    if os.path.isfile(saving_classifier_model_file):
-        print('existing mlp model found. loading it.')
-        clf = joblib.load(saving_classifier_model_file)
-
-    else:
-        print('mlp initailing started')
-        mlp = MLPClassifier(hidden_layer_sizes=(no_of_hidden_neurons,
-                                                no_of_hidden_neurons,),
-                            solver='adam', activation='relu',
-                            learning_rate='adaptive', learning_rate_init=0.001,
-                            max_iter=1000000,
-                            verbose=True, tol=0.000000001)
-        print('mlp fitting started')
-        mlp.fit(X_training, y_training)
-        print('mlp fitting finished')
-
-        '''save to disk'''
-        joblib.dump(mlp, saving_classifier_model_file)
-        clf = mlp
-    end_time = time.time()
-    print('trained in: ', end_time - start_time)
-    return clf
-# test data
-
 
 def load_test_documents():
     X_test = []
+    y_test = []
     for folder_name in os.listdir(test_file_dir):
         if not folder_name.startswith('.'):
             '''Do operations for each folder/class'''
@@ -308,13 +278,79 @@ def load_test_documents():
 
                     bag_0_1_vector, bag_words_vector, bag_words = bow(
                         document.lower(), words, show_details=False)
+                    y = [0, 0, 0]
+                    if folder_name == 'comp.windows.x':
+                        y = [1, 0, 0]
+                    elif folder_name == 'rec.sport.hockey':
+                        y = [0, 1, 0]
+                    else:
+                        y = [0, 0, 1]
                     X_test.append(bag_0_1_vector)
-    return X_test
+                    y_test.append(y)
+    return np.array(X_test), np.array(y_test)
 
 
-X_test = np.array(load_test_documents())
-print('test_shape: ', X_test.shape)
+# training data
+training, output = convert_training_documents_to_vector()
+X_training = np.array(training)
+y_training = np.array(output)
+train = len(X_training)
+print('X_training: ', X_training.shape)
+print('y_training: ', y_training.shape)
+
+# test data
+X_test, y_test = load_test_documents()
+print('X_Test: ', X_test.shape)
+print('y_test: ', y_test.shape)
+X_training = np.vstack((X_training, X_test))
+y_training = np.vstack((y_training, y_test))
+print('after appending X_training: ', X_training.shape)
+print('after appending y_training: ', y_training.shape)
+'''feature selection'''
+# sel = VarianceThreshold(threshold=(.8 * (1 - .8)))
+# X_training_selected_features = sel.fit_transform(X_training)
+X_training_selected_features = SelectKBest(
+    chi2, k=200).fit_transform(X_training, y_training)
+'''split into training and test'''
+X_training = X_training_selected_features[:train]
+X_test = X_training_selected_features[train:]
+y_training = y_training[:train]
+y_test = y_training[train:]
+print('after feature selection X_training: ', X_training.shape)
+print('after feature selection X_test: ', X_test.shape)
+no_of_hidden_neurons = ((len(X_training[0])))
+
+
+def train_NN():
+    start_time = time.time()
+    if os.path.isfile(saving_classifier_model_file):
+        print('existing mlp model found. loading it.')
+        clf = joblib.load(saving_classifier_model_file)
+        print('clf: ', clf)
+    else:
+        print('mlp initailing started')
+        mlp = MLPClassifier(hidden_layer_sizes=(no_of_hidden_neurons,
+                                                no_of_hidden_neurons,),
+                            solver='adam', activation='relu',
+                            learning_rate='adaptive', learning_rate_init=0.001,
+                            max_iter=1000000,
+                            verbose=True, tol=0.000000001)
+        print('clf: ', mlp)
+        print('mlp fitting started')
+        mlp.fit(X_training, y_training)
+        print('mlp fitting finished')
+
+        '''save to disk'''
+        joblib.dump(mlp, saving_classifier_model_file)
+        clf = mlp
+    end_time = time.time()
+    print('trained in: ', end_time - start_time)
+    return clf
+# test data
+
+
 print('train_shape: ', X_training.shape)
+print('test_shape: ', X_test.shape)
 clf = train_NN()
 print('predicting started...')
 print('predict: ', clf.predict(X_test))
