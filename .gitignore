@@ -2,6 +2,7 @@
 data/glove.6B
 data/preloaded
 Text_Classification/CNN/runs/
+*.dt
 
 .metadata
 bin/

@@ -89,13 +89,15 @@ def save_data(data, file_name):
 
 # Load data
 root_data_folder = '../../data/20news-18828/train'
-saving_data_file = '../../data/preloaded/20news_18828.dt'
-saving_words_data_file = '../../data/preloaded/20news_all_words.dt'
-saving_bag_of_words_data_file = '../../data/preloaded/20news_bag_of_words.dt'
+saving_data_file = '../../data/20news-18828/preloaded/20news_18828.dt'
+saving_words_data_file = '../../data/20news-18828/preloaded/20news_all_words.dt'
+saving_bag_of_words_data_file = '../../data/20news-18828/preloaded/20news_bag_of_words.dt'
 x_text, y, y_label = load_data_and_labels(root_data_folder, saving_data_file)
 
 words = []
 ignore_words = ['?']
+
+print("Program started")
 
 # If file is saved then just load the file
 if os.path.isfile(saving_words_data_file):
@@ -144,9 +146,10 @@ output = []
 # create an empty array for our output
 output_empty = [0] * len(classes)
 
-
+print("Stemming started")
 # If file is saved then just load the file
 if os.path.isfile(saving_bag_of_words_data_file):
+    print(saving_bag_of_words_data_file, ' found in disk. loading it.')
     with open(os.path.abspath(saving_bag_of_words_data_file), 'rb') as f:
         training = pickle.load(f)
 
@@ -158,6 +161,8 @@ if os.path.isfile(saving_bag_of_words_data_file):
 
 else:
     # training set, bag of words for each document
+    print(saving_bag_of_words_data_file,
+          ' nod found in disk. doing operations....')
     for doc in documents:
         # initialize our bag of words
         bag = []
@@ -176,15 +181,16 @@ else:
         output_row[classes.index(doc[1])] = 1
         output.append(output_row)
 
+    print("dumping to pickle started")
     with open(os.path.abspath(saving_bag_of_words_data_file), 'wb') as f:
         pickle.dump(training, f)
 
 
 # sample training/output
-i = 0
-w = documents[i]
-print([stemmer.stem(word.lower()) for word in w])
-print(output[i])
+#i = 0
+#w = documents[i]
+#print([stemmer.stem(word.lower()) for word in w])
+# print(output[i])
 
 
 # compute sigmoid nonlinearity
@@ -247,90 +253,100 @@ def train(X, y, hidden_neurons=10, alpha=1, epochs=50000, dropout=False, dropout
 
     print("Training with %s neurons, alpha:%s, dropout:%s %s" % (
         hidden_neurons, str(alpha), dropout, dropout_percent if dropout else ''))
-    print("Input matrix: %sx%s    Output matrix: %sx%s" %
-          (len(X), len(X[0]), 1, len(classes)))
+    print("Input matrix: %sx%s  \nno_of_hidden_layer_neurons:%s  \nOutput matrix: %sx%s" %
+          (len(X), len(X[0]), hidden_neurons, hidden_neurons, len(classes)))
     np.random.seed(1)
 
     last_mean_error = 1
+    print('initializing synapses')
     # randomly initialize our weights with mean 0
     synapse_0 = 2 * np.random.random((len(X[0]), hidden_neurons)) - 1
     synapse_1 = 2 * np.random.random((hidden_neurons, hidden_neurons)) - 1
     synapse_2 = 2 * np.random.random((hidden_neurons, len(classes))) - 1
-
+    print('initializing prev synapses')
     prev_synapse_0_weight_update = np.zeros_like(synapse_0)
     prev_synapse_1_weight_update = np.zeros_like(synapse_1)
     prev_synapse_2_weight_update = np.zeros_like(synapse_2)
-
+    print('initializing synapse_direction_count')
     synapse_0_direction_count = np.zeros_like(synapse_0)
     synapse_1_direction_count = np.zeros_like(synapse_1)
     synapse_2_direction_count = np.zeros_like(synapse_2)
 
     for j in iter(range(epochs + 1)):
 
-        # Feed forward through layers 0, 1, and 2
-        layer_0 = X
-        layer_1 = sigmoid(np.dot(layer_0, synapse_0))
+        # online weight update
+        doc_counter = 0
+        for _x in X:
+            doc_counter += 1
+            print('document: ', doc_counter)
+            # Feed forward through layers 0, 1, and 2
+            layer_0 = _x
+            layer_1 = sigmoid(np.dot(layer_0, synapse_0))
 
-#         if(dropout):
-#             layer_1 *= np.random.binomial([np.ones((len(X), hidden_neurons))],
-# 1 - dropout_percent)[0] * (1.0 / (1 - dropout_percent))
+    #         if(dropout):
+    #             layer_1 *= np.random.binomial([np.ones((len(X), hidden_neurons))],
+    #         1 - dropout_percent)[0] * (1.0 / (1 - dropout_percent))
 
-        layer_2 = sigmoid(np.dot(layer_1, synapse_1))
+            layer_2 = sigmoid(np.dot(layer_1, synapse_1))
 
-        layer_3 = sigmoid(np.dot(layer_2, synapse_2))
+            layer_3 = sigmoid(np.dot(layer_2, synapse_2))
 
-        # error?
-        layer_3_error = y - layer_3
+            # error?
+            layer_3_error = y - layer_3
 
-        if (j % 1000) == 0 and j > 5000:
-            # if this 1k iteration's error is greater than the last iteration,
-            # break out
-            if np.mean(np.abs(layer_3_error)) < last_mean_error:
-                print("delta after " + str(j) + " iterations:" +
-                      str(np.mean(np.abs(layer_3_error))))
-                last_mean_error = np.mean(np.abs(layer_3_error))
-            else:
-                print("break:", np.mean(np.abs(layer_3_error)),
-                      ">", last_mean_error)
-                break
+            # (j % 1000) == 0 and
+            if j > 500:
+                # if this 1k iteration's error is greater than the last iteration,
+                # break out
+                if np.mean(np.abs(layer_3_error)) < last_mean_error:
+                    print("delta after " + str(j) + " iterations:" +
+                          str(np.mean(np.abs(layer_3_error))))
+                    last_mean_error = np.mean(np.abs(layer_3_error))
+                else:
+                    print("break:", np.mean(np.abs(layer_3_error)),
+                          ">", last_mean_error)
+                    break
 
-        # output_layer_delta
-        layer_3_delta = layer_3_error * sigmoid_output_to_derivative(layer_3)
+            # output_layer_delta
+            layer_3_delta = layer_3_error * \
+                sigmoid_output_to_derivative(layer_3)
 
-        # how much did each l2 value contribute to the l3 error (according to
-        # the weights)?
-        layer_2_error = layer_3_delta.dot(synapse_2.T)
+            # how much did each l2 value contribute to the l3 error (according to
+            # the weights)?
+            layer_2_error = layer_3_delta.dot(synapse_2.T)
 
-        # in what direction is the target l2?
-        layer_2_delta = layer_2_error * sigmoid_output_to_derivative(layer_2)
+            # in what direction is the target l2?
+            layer_2_delta = layer_2_error * \
+                sigmoid_output_to_derivative(layer_2)
 
-        # how much did each l1 value contribute to the l2 error (according to
-        # the weights)?
-        layer_1_error = layer_2_delta.dot(synapse_1.T)
+            # how much did each l1 value contribute to the l2 error (according to
+            # the weights)?
+            layer_1_error = layer_2_delta.dot(synapse_1.T)
 
-        # in what direction is the target l1?
-        layer_1_delta = layer_1_error * sigmoid_output_to_derivative(layer_1)
+            # in what direction is the target l1?
+            layer_1_delta = layer_1_error * \
+                sigmoid_output_to_derivative(layer_1)
 
-        synapse_2_weight_update = (layer_2.T.dot(layer_3_delta))
-        synapse_1_weight_update = (layer_1.T.dot(layer_2_delta))
-        synapse_0_weight_update = (layer_0.T.dot(layer_1_delta))
+            synapse_2_weight_update = (layer_2.T.dot(layer_3_delta))
+            synapse_1_weight_update = (layer_1.T.dot(layer_2_delta))
+            synapse_0_weight_update = (layer_0.T.dot(layer_1_delta))
 
-        if(j > 0):
-            synapse_0_direction_count += np.abs(
-                ((synapse_0_weight_update > 0) + 0) - ((prev_synapse_0_weight_update > 0) + 0))
-            synapse_1_direction_count += np.abs(
-                ((synapse_1_weight_update > 0) + 0) - ((prev_synapse_1_weight_update > 0) + 0))
-            synapse_2_direction_count += np.abs(
-                ((synapse_2_weight_update > 0) + 0) - ((prev_synapse_2_weight_update > 0) + 0))
+            if(j > 0):
+                synapse_0_direction_count += np.abs(
+                    ((synapse_0_weight_update > 0) + 0) - ((prev_synapse_0_weight_update > 0) + 0))
+                synapse_1_direction_count += np.abs(
+                    ((synapse_1_weight_update > 0) + 0) - ((prev_synapse_1_weight_update > 0) + 0))
+                synapse_2_direction_count += np.abs(
+                    ((synapse_2_weight_update > 0) + 0) - ((prev_synapse_2_weight_update > 0) + 0))
 
-        synapse_2 += alpha * synapse_2_weight_update
-        synapse_1 += alpha * synapse_1_weight_update
-        synapse_0 += alpha * synapse_0_weight_update
+            synapse_2 += alpha * synapse_2_weight_update
+            synapse_1 += alpha * synapse_1_weight_update
+            synapse_0 += alpha * synapse_0_weight_update
 
-        prev_synapse_0_weight_update = synapse_0_weight_update
-        prev_synapse_1_weight_update = synapse_1_weight_update
-        prev_synapse_2_weight_update = synapse_2_weight_update
-
+            prev_synapse_0_weight_update = synapse_0_weight_update
+            prev_synapse_1_weight_update = synapse_1_weight_update
+            prev_synapse_2_weight_update = synapse_2_weight_update
+        print('epoch: ', j, ' error: ', last_mean_error)
     now = datetime.datetime.now()
 
     # persist synapses
@@ -353,7 +369,7 @@ y = np.array(output)
 
 start_time = time.time()
 
-train(X, y, hidden_neurons=20, alpha=0.1,
+train(X, y, hidden_neurons=(2 * (len(X[0]))), alpha=0.1,
       epochs=1000000, dropout=False, dropout_percent=0.2)
 
 elapsed_time = time.time() - start_time
@@ -363,7 +379,7 @@ print("processing time:", elapsed_time, "seconds")
 # probability threshold
 ERROR_THRESHOLD = 0
 # load our calculated synapse values
-synapse_file = 'synapses.json'
+synapse_file = 'synapses_more_neuron.json'
 with open(synapse_file) as data_file:
     synapse = json.load(data_file)
     synapse_0 = np.asarray(synapse['synapse0'])

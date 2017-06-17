@@ -21,11 +21,11 @@ import numpy as np
 stemmer = LancasterStemmer()
 
 # Load data
-root_data_folder = '../../data/20news-18828'
-saving_data_file = '../../data/preloaded/20news_18828.dt'
-saving_words_data_file = '../../data/preloaded/20news_all_words.dt'
-saving_bag_of_words_data_file = '../../data/preloaded/20news_bag_of_words.dt'
-
+root_data_folder = '../../data/20news-18828/test'
+saving_data_file = '../../data/20news-18828/preloaded/20news_18828.dt'
+saving_words_data_file = '../../data/20news-18828/preloaded/20news_all_words.dt'
+saving_bag_of_words_data_file = '../../data/20news-18828/preloaded/20news_bag_of_words.dt'
+test_file_dir = '/Users/sarker/WorkSpaces/EclipseNeon/XAI/data/20news-18828/test_backup'
 
 classes = ['comp.graphics', 'rec.autos', 'soc.religion.christian']
 words = []
@@ -94,6 +94,7 @@ def sigmoid_output_to_derivative(output):
 
 activation_threshold = 0.6
 
+# As List
 l0_activations = []
 l1_activations = []
 l2_activations = []
@@ -121,19 +122,19 @@ def estimate(document, show_details=False):
 
     '''Try to get explanation'''
     '''analyze neurons'''
-    print('l0: ', l0.shape, np.amax(l0), np.argmax(l0))
-    print('l1: ', l1.shape, np.amax(l1), np.argmax(l1))
-    print('l2: ', l2.shape, np.amax(l2), np.argmax(l2))
-    print('l3: ', l3.shape, np.amax(l3), np.argmax(l3))
+#     print('l0: ', l0.shape, np.amax(l0), np.argmax(l0))
+#     print('l1: ', l1.shape, np.amax(l1), np.argmax(l1))
+#     print('l2: ', l2.shape, np.amax(l2), np.argmax(l2))
+#     print('l3: ', l3.shape, np.amax(l3), np.argmax(l3))
     l0_actv = [index for index, x in enumerate(
         l0) if x > (activation_threshold + .15)]
     l1_actv = [index for index, x in enumerate(l1) if x > activation_threshold]
     l2_actv = [index for index, x in enumerate(l2) if x > activation_threshold]
     l3_actv = [index for index, x in enumerate(l3) if x > activation_threshold]
-    print('l0_actv: ', l0_actv)
-    print('l1_actv: ', l1_actv)
-    print('l2_actv: ', l2_actv)
-    print('l3_actv: ', l3_actv)
+#     print('l0_actv: ', l0_actv)
+#     print('l1_actv: ', l1_actv)
+#     print('l2_actv: ', l2_actv)
+#     print('l3_actv: ', l3_actv)
     l0_activations.extend('\n')
     l0_activations.extend(l0_actv)
 
@@ -176,7 +177,7 @@ def estimate(document, show_details=False):
                 print(' word: ', j, ' \tscore: ', i)
             f.write(' word: ' + str(j) + ' \tscore: ' + str(i) + '\n')
 
-    return l3
+    return l3, l0_actv, l1_actv, l2_actv, l3_actv
 
 
 # probability threshold
@@ -192,60 +193,91 @@ with open(synapse_file) as data_file:
 
 
 def classify(document, show_details=False):
-    results = estimate(document, show_details)
+    results, l0_actv, l1_actv, l2_actv, l3_actv = estimate(
+        document, show_details)
 
     results = [[i, r] for i, r in enumerate(results) if r > ERROR_THRESHOLD]
     results.sort(key=lambda x: x[1], reverse=True)
     return_results = [[classes[r[0]], r[1]] for r in results]
-    print("first 5 words from document: %s \nclassification: %s" %
-          (document.split(' ')[:5], return_results))
-    return return_results
+    if show_details:
+        print("first 5 words from document: %s \nclassification: %s" %
+              (document.split(' ')[:5], return_results))
+    return return_results, l0_actv, l1_actv, l2_actv, l3_actv
 
 
 test_doc_1 = open(
     '/Users/sarker/WorkSpaces/EclipseNeon/XAI/data/20news-18828_3_class/comp.graphics/38343', encoding='utf-8').read()
-print('####################')
-print('raw document:\n', test_doc_1)
-print('####################')
 test_doc_2 = open(
     '/Users/sarker/WorkSpaces/EclipseNeon/XAI/data/20news-18828_3_class/rec.autos/102800', encoding='utf-8').read()
 test_doc_3 = open(
     '/Users/sarker/WorkSpaces/EclipseNeon/XAI/data/20news-18828_3_class/soc.religion.christian/20599', encoding='utf-8').read()
-test_file_dir = '/Users/sarker/WorkSpaces/EclipseNeon/XAI/data/20news-18828'
+
+
+folder_names = ['comp.graphics', 'rec_autos', 'soc.religion.christian']
+# As Set
+l0_activations_set = {
+    'com_graphics': set(), 'rec_autos': set(), 'soc.religion.christian': set()}
+l1_activations_set = {
+    'com_graphics': set(), 'rec_autos': set(), 'soc.religion.christian': set()}
+l2_activations_set = {
+    'com_graphics': set(), 'rec_autos': set(), 'soc.religion.christian': set()}
+l3_activations_set = {
+    'com_graphics': set(), 'rec_autos': set(), 'soc.religion.christian': set()}
 
 for folder_name in os.listdir(test_file_dir):
     if not folder_name.startswith('.'):
-        for file_name in os.listdir(os.path.join(root_data_folder, folder_name)):
+        '''Do operations for each folder/class'''
+        print('folder_name: ', folder_name)
+        file_counter = 0
+        for file_name in os.listdir(os.path.join(test_file_dir, folder_name)):
             if not file_name.startswith('.'):
+                file_counter += 1
                 document = open(os.path.join(test_file_dir, folder_name, file_name),
                                 mode='r', encoding='utf-8', errors='ignore').read()
 
-                classify(document,  show_details=False)
-                print()
+                result, l0_actv, l1_actv, l2_actv, l3_actv = classify(
+                    document,  show_details=False)
+                #print('classification: ', result)
+                if file_counter == 1:
+                    l0_activations_set[folder_name] = set(l0_actv)
+                    l1_activations_set[folder_name] = set(l1_actv)
+                    l2_activations_set[folder_name] = set(l2_actv)
+                    l3_activations_set[folder_name] = set(l3_actv)
+                else:
+                    l0_activations_set[folder_name] &= set(l0_actv)
+                    l1_activations_set[folder_name] &= set(l1_actv)
+                    l2_activations_set[folder_name] &= set(l2_actv)
+                    l3_activations_set[folder_name] &= set(l3_actv)
 
+        # print activations
+        print('l0_activations_set: ', l0_activations_set[folder_name])
+        print('l1_activations_set: ', l1_activations_set[folder_name])
+        print('l2_activations_set: ', l2_activations_set[folder_name])
+        print('l3_activations_set: ', l3_activations_set[folder_name])
+        print()
 
 with open('stats.txt', 'w', encoding='utf-8') as f:
     f.write('l0:  ')
     for l0_a in l0_activations:
-        print(l0_a)
+        # print(l0_a)
         if l0_a == '\n':
             f.write('\n')
         f.write(str(l0_a))
     f.write('\n\nl1:  ')
     for l1_a in l1_activations:
-        print(l1_a)
+        # print(l1_a)
         if l1_a == '\n':
             f.write('\n')
         f.write(str(l1_a))
     f.write('\n\nl2:  ')
     for l2_a in l2_activations:
-        print(l2_a)
+        # print(l2_a)
         if l2_a == '\n':
             f.write('\n')
         f.write(str(l2_a))
     f.write('\n\nl3:  ')
     for l3_a in l3_activations:
-        print(l3_a)
+        # print(l3_a)
         if l3_a == '\n':
             f.write('\n')
         f.write(str(l3_a))
