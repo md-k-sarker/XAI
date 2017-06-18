@@ -302,20 +302,20 @@ print('y_training: ', y_training.shape)
 X_test, y_test = load_test_documents()
 print('X_Test: ', X_test.shape)
 print('y_test: ', y_test.shape)
-X_training = np.vstack((X_training, X_test))
-y_training = np.vstack((y_training, y_test))
-print('after appending X_training: ', X_training.shape)
-print('after appending y_training: ', y_training.shape)
-'''feature selection'''
-# sel = VarianceThreshold(threshold=(.8 * (1 - .8)))
-# X_training_selected_features = sel.fit_transform(X_training)
-X_training_selected_features = SelectKBest(
-    chi2, k=200).fit_transform(X_training, y_training)
-'''split into training and test'''
-X_training = X_training_selected_features[:train]
-X_test = X_training_selected_features[train:]
-y_training = y_training[:train]
-y_test = y_training[train:]
+# X_training = np.vstack((X_training, X_test))
+# y_training = np.vstack((y_training, y_test))
+# print('after appending X_training: ', X_training.shape)
+# print('after appending y_training: ', y_training.shape)
+# '''feature selection'''
+# # sel = VarianceThreshold(threshold=(.8 * (1 - .8)))
+# # X_training_selected_features = sel.fit_transform(X_training)
+# X_training_selected_features = SelectKBest(
+#     chi2, k=200).fit_transform(X_training, y_training)
+# '''split into training and test'''
+# X_training = X_training_selected_features[:train]
+# X_test = X_training_selected_features[train:]
+# y_training = y_training[:train]
+# y_test = y_training[train:]
 print('after feature selection X_training: ', X_training.shape)
 print('after feature selection X_test: ', X_test.shape)
 no_of_hidden_neurons = ((len(X_training[0])))
