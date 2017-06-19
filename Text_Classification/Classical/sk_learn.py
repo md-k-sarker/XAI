@@ -5,7 +5,7 @@ Created on Jun 16, 2017
 '''
 
 import numpy as np
-from sklearn.neural_network import MLPClassifier
+from sklearn.neural_network import MLPClassifier_Custom
 from sklearn.externals import joblib
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
@@ -152,6 +152,8 @@ saving_data_file = '../../data/20news-18828/preloaded/20news_18828.dt'
 saving_global_words_embedding_file = '../../data/20news-18828/preloaded/20news_all_words.dt'
 saving_bag_of_words_data_file = '../../data/20news-18828/preloaded/20news_bag_of_words.dt'
 saving_classifier_model_file = '../../data/20news-18828/preloaded/model.dt'
+saving_backup_classifier_model_file = '/Users/sarker/Google Drive/mdkamruzzamansarker@gmail.com/Education/Research/' + \
+    'Projects/XAI-Freddy/experiments/backup/preloaded_Jun_17_2017/model.dt'
 x_text, y, y_label = load_data_and_labels(train_data_folder, saving_data_file)
 
 words = []
@@ -302,20 +304,20 @@ print('y_training: ', y_training.shape)
 X_test, y_test = load_test_documents()
 print('X_Test: ', X_test.shape)
 print('y_test: ', y_test.shape)
-# X_training = np.vstack((X_training, X_test))
-# y_training = np.vstack((y_training, y_test))
-# print('after appending X_training: ', X_training.shape)
-# print('after appending y_training: ', y_training.shape)
-# '''feature selection'''
-# # sel = VarianceThreshold(threshold=(.8 * (1 - .8)))
-# # X_training_selected_features = sel.fit_transform(X_training)
-# X_training_selected_features = SelectKBest(
-#     chi2, k=200).fit_transform(X_training, y_training)
-# '''split into training and test'''
-# X_training = X_training_selected_features[:train]
-# X_test = X_training_selected_features[train:]
-# y_training = y_training[:train]
-# y_test = y_training[train:]
+X_training = np.vstack((X_training, X_test))
+y_training = np.vstack((y_training, y_test))
+print('after appending X_training: ', X_training.shape)
+print('after appending y_training: ', y_training.shape)
+'''feature selection'''
+# sel = VarianceThreshold(threshold=(.8 * (1 - .8)))
+# X_training_selected_features = sel.fit_transform(X_training)
+X_training_selected_features = SelectKBest(
+    chi2, k=3474).fit_transform(X_training, y_training)
+'''split into training and test'''
+X_training = X_training_selected_features[:train]
+X_test = X_training_selected_features[train:]
+y_training = y_training[:train]
+y_test = y_training[train:]
 print('after feature selection X_training: ', X_training.shape)
 print('after feature selection X_test: ', X_test.shape)
 no_of_hidden_neurons = ((len(X_training[0])))
@@ -328,13 +330,13 @@ def train_NN():
         clf = joblib.load(saving_classifier_model_file)
         print('clf: ', clf)
     else:
-        print('mlp initailing started')
-        mlp = MLPClassifier(hidden_layer_sizes=(no_of_hidden_neurons,
-                                                no_of_hidden_neurons,),
-                            solver='adam', activation='relu',
-                            learning_rate='adaptive', learning_rate_init=0.001,
-                            max_iter=1000000,
-                            verbose=True, tol=0.000000001)
+        print('mlp initilizing started')
+        mlp = MLPClassifier_Custom(hidden_layer_sizes=(no_of_hidden_neurons,
+                                                       no_of_hidden_neurons,),
+                                   solver='adam', activation='relu',
+                                   learning_rate='adaptive', learning_rate_init=0.001,
+                                   max_iter=1000000,
+                                   verbose=True, tol=0.000000001)
         print('clf: ', mlp)
         print('mlp fitting started')
         mlp.fit(X_training, y_training)
@@ -353,5 +355,5 @@ print('train_shape: ', X_training.shape)
 print('test_shape: ', X_test.shape)
 clf = train_NN()
 print('predicting started...')
-print('predict: ', clf.predict(X_test))
+#print('predict: ', clf.predict(X_test))
 print('predict_proba: ', clf.predict_proba(X_test))
