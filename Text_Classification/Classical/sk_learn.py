@@ -74,7 +74,7 @@ def load_data_and_labels(train_data_folder, saved_file):
         for folder_name in os.listdir(train_data_folder):
             if not folder_name.startswith('.'):
                 for file_name in os.listdir(os.path.join(train_data_folder, folder_name)):
-                    if not file_name.startswith('.'):
+                    if not file_name.startswith('.') and not file_name.endswith('keyword'):
                         examples = open(os.path.join(train_data_folder, folder_name, file_name),
                                         mode='r', encoding='utf-8', errors='ignore').read().strip()
 
@@ -280,7 +280,7 @@ def load_test_documents(test_file_dir=test_file_dir):
             folder_counter += 1
             file_counter = 0
             for file_name in os.listdir(os.path.join(test_file_dir, folder_name)):
-                if not file_name.startswith('.'):
+                if not file_name.startswith('.') and not file_name.endswith('keyword'):
                     file_counter += 1
                     document = open(os.path.join(test_file_dir, folder_name, file_name),
                                     mode='r', encoding='utf-8', errors='ignore').read()
@@ -316,6 +316,7 @@ X_training = np.vstack((X_training, X_test))
 y_training_ = np.vstack((y_training, y_test))
 print('after appending X_training: ', X_training.shape)
 print('after appending y_training: ', y_training_.shape)
+
 '''feature selection'''
 # sel = VarianceThreshold(threshold=(.8 * (1 - .8)))
 # X_training_selected_features = sel.fit_transform(X_training)
@@ -372,13 +373,16 @@ X_test_comp_windows = X_test[:2]
 X_rec_sport_hockey = X_test[2:4]
 X_talk_politics_guns = X_test[4:]
 
-predict_proba, activated_neurons_comp_windows = clf.predict_proba(
+predict_proba, activated_neurons_comp_windows, activated_neurons_raw_sum_comp_windows = clf.predict_proba(
     X_test_comp_windows)
-predict_proba, activated_neurons_sport_hockey = clf.predict_proba(
+predict_proba, activated_neurons_sport_hockey, activated_neurons_raw_sum_sport_hockey = clf.predict_proba(
     X_rec_sport_hockey)
-predict_proba, activated_neurons_politics_guns = clf.predict_proba(
+predict_proba, activated_neurons_politics_guns, activated_neurons_raw_sum_politics_guns = clf.predict_proba(
     X_talk_politics_guns)
 
+predict_proba_all, activated_neurons_all, activated_neurons_raw_sum_all = clf.predict_proba(
+    X_test)
+print('len(X_test): ', len(X_test))
 
 '''Plot for each class'''
 # 3474
@@ -394,6 +398,7 @@ fig1 = plt.figure(1).add_subplot(111)  # fig.add_subplot(1, 3, 1)
 fig2 = plt.figure(2).add_subplot(111)  # fig.add_subplot(1, 3, 2)
 fig3 = plt.figure(3).add_subplot(111)  # fig.add_subplot(1, 3, 3)
 fig4 = plt.figure(4).add_subplot(111)
+fig5 = plt.figure(5).add_subplot(111)
 fig1.set_title('class comp.windows_x')
 fig2.set_title('class sport_hockey')
 fig3.set_title('class politics_guns')
@@ -409,25 +414,28 @@ for layer_i in range(3):
     activated_for_all_class = activated_neurons_comp_windows[
         layer_i] & activated_neurons_sport_hockey[layer_i] & activated_neurons_politics_guns[layer_i]
     #print('activated_for_all_class: ', activated_for_all_class)
-    print('hidden_layer %s' % (layer_i + 1))
-    print('activated_for_all_class: ', activated_for_all_class)
-    print('activated_neurons_only_for_comp_windows: ',
-          activated_neurons_comp_windows[
-              layer_i] - activated_for_all_class)
-    print('activated_neurons_only_for_sport_hockey',
-          activated_neurons_sport_hockey[layer_i] - activated_for_all_class)
-    print('activated_neurons_only_politics_guns',
-          len(activated_neurons_politics_guns[layer_i] - activated_for_all_class))
-    print('\n')
+#     print('hidden_layer %s' % (layer_i + 1))
+#     print('activated_for_all_class: ', activated_for_all_class)
+#     print('activated_neurons_only_for_comp_windows: ',
+#           activated_neurons_comp_windows[
+#               layer_i] - activated_for_all_class)
+#     print('activated_neurons_only_for_sport_hockey',
+#           activated_neurons_sport_hockey[layer_i] - activated_for_all_class)
+#     print('activated_neurons_only_for_politics_guns',
+#           len(activated_neurons_politics_guns[layer_i] - activated_for_all_class))
+#     print('\n')
     x = [layer_i + 1] * 3474
 
     # add a square renderer with a size, color, and alpha
     y_windows = [0] * 3474
     y_hockey = [0] * 3474
     y_guns = [0] * 3474
+    y_raw_all = [0] * 3474
+    s_raw_all = [0] * 3474
 
     for index in activated_neurons_comp_windows[layer_i]:
         y_windows[index] = index
+
     #fig1.scatter(x, y, color=color[layer_i], marker='.')
     #p1.square(x, y, size=2, color="olive", alpha=0.5)
 
@@ -438,6 +446,27 @@ for layer_i in range(3):
 
     for index in activated_neurons_politics_guns[layer_i]:
         y_guns[index] = index
+
+    for index, value in enumerate(activated_neurons_raw_sum_all[layer_i]):
+        if value > 2:
+            y_raw_all[index] = index
+            s_raw_all[index] = value * 10
+        else:
+            y_raw_all[index] = 0
+            s_raw_all[index] = 0
+#     print('activated_neurons_politics_guns[layer_i]: ',
+#           activated_neurons_politics_guns[layer_i])
+#     print('activated_neurons_raw_sum_all[layer_i]: ',
+#           len(y_raw_all), y_raw_all)
+#     print('y_guns: ', y_guns)
+
+    if layer_i == 0:
+        print()
+        print('activated_neurons_raw_sum_all[layer_i]: ',
+              activated_neurons_raw_sum_all[layer_i])
+        #print('y_raw_all: ', y_raw_all)
+        #print('s_raw_all: ', s_raw_all)
+        print()
     #fig3.scatter(x, y, color=color[layer_i], marker='.')
     #p3.square(x, y, size=2, color="olive", alpha=0.5)
     '''using multiple figure'''
@@ -456,25 +485,38 @@ for layer_i in range(3):
     fig4.scatter(np.array(x) + .15, y_guns,
                  color=color[2], marker='.')
 
+    '''using weighted bubble'''
+    fig5.scatter(x, y_raw_all, s=s_raw_all, color=color[layer_i],
+                 marker='.', label=lbl)
+
 # show the results
 # show(p1)
 # show(p2)
 # show(p3)
+y_ticks = [x for x in range(0, 3475)]
 fig1.set_xticks([1, 2, 3])
 fig2.set_xticks([1, 2, 3])
 fig3.set_xticks([1, 2, 3])
 fig4.set_xticks([1, 2, 3])
+fig5.set_xticks([1, 2, 3])
+
+# fig1.set_yticks(y_ticks)
+# fig2.set_yticks(y_ticks)
+# fig3.set_yticks(y_ticks)
+# fig4.set_yticks(y_ticks)
+# fig5.set_yticks(y_ticks)
 
 fig1.set_xlabel('hidden_layers ')
 fig2.set_xlabel('hidden_layers')
 fig3.set_xlabel('hidden_layers')
 fig4.set_xlabel('hidden_layers')
+fig5.set_xlabel('hidden_layers')
 
 fig1.set_ylabel('n\'th neuron')
 fig2.set_ylabel('n\'th neuron')
 fig3.set_ylabel('n\'th neuron')
 fig4.set_ylabel('n\'th neuron')
-
+fig5.set_ylabel('n\'th neuron')
 
 # fig4.set_label(['computer', 'guns', 'hockey', 'computer',
 #                 'guns', 'hockey', 'computer', 'guns', 'hockey'])
@@ -484,7 +526,7 @@ fig2.legend(loc='upper left')
 fig3.legend(loc='upper left')
 fig4.legend(['class comp.windows_x', 'class sport_hockey',
              'class politics_guns'], loc='upper left')
-
+fig5.legend(loc='upper left')
 
 '''dump to pickle'''
 figure_file = '../../data/20news-18828/preloaded/fig.dt'
