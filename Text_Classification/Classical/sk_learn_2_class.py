@@ -1,36 +1,32 @@
 '''
+2 class Classifier and explainer.
+Classifier using sk-learn model 
+'''
+'''
 Created on Jun 16, 2017
 
 @author: sarker
 '''
+import re
+import itertools
+from collections import Counter
+import time
+import os
+import json
+import pickle
 
 import numpy as np
+import matplotlib.pyplot as plt
+
 from sklearn.neural_network import MLPClassifier
 from sklearn.externals import joblib
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 from sklearn.feature_selection import VarianceThreshold
-from bokeh.plotting import figure, output_file, show
-import matplotlib.pyplot as plt
-
-# Load Dataset
-# use natural language toolkit
+import tensorflow as tf
 import nltk
 from nltk.stem.porter import *
-import os
-import json
-import datetime
-import numpy as np
-import re
-import itertools
-from collections import Counter
-import time
-import datetime
-import pickle
-
-import tensorflow as tf
-import numpy as np
-stemmer = PorterStemmer()
+# from bokeh.plotting import figure, output_file, show
 
 
 print("Program started")
@@ -46,6 +42,8 @@ saving_backup_classifier_model_file = '/Users/sarker/Google Drive/mdkamruzzamans
 
 ignore_words = ['?', '#', '1', '2', '3', '4',
                 '5', '6', '7', '8', '9', '0', '.', ',']
+
+stemmer = PorterStemmer()
 
 
 def clean_str(string):
