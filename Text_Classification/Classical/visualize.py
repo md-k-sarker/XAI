@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 import pickle
 
 
-figure_file = '../../data/20news-18828/preloaded/fig.dt'
+figure_file = '../../data/20news-18828/2_class/model/fig.pickle'
 
-[f1, f2, f3, f4] = pickle.load(open(figure_file, 'rb'))
+'''after loading from pickle zooming is not working'''
+[fig1,fig2,fig3,fig4] = pickle.load(open(figure_file, 'rb'))
 plt.show()
