@@ -1,12 +1,13 @@
+from sklearn import metrics
 from sklearn.datasets import fetch_20newsgroups
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
-from sklearn.linear_model import SGDClassifier
-from sklearn import metrics
 
 import numpy as np
+
 
 random_state = 42
 

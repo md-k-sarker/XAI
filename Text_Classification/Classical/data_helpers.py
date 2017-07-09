@@ -1,16 +1,18 @@
-import numpy as np
-import re
-import itertools
 from collections import Counter
-import tensorflow as tf
-import numpy as np
-import os
-import time
 import datetime
+import itertools
+import os
 import pickle
+import re
+import time
 
 import nltk
 from nltk.stem.porter import *
+
+import numpy as np
+import numpy as np
+import tensorflow as tf
+
 
 ignore_words = ['?', '#', '1', '2', '3', '4',
                 '5', '6', '7', '8', '9', '0', '.', ',']

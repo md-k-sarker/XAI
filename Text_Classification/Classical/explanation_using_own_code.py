@@ -3,21 +3,24 @@ Created on Jun 8, 2017
 
 @author: sarker
 '''
+from collections import Counter
+import datetime
+import datetime
+import itertools
+import json
+import os
+import pickle
+import re
+import time
+
 import nltk
 from nltk.stem.lancaster import LancasterStemmer
-import os
-import json
-import datetime
-import numpy as np
-import re
-import itertools
-from collections import Counter
-import time
-import datetime
-import pickle
 
-import tensorflow as tf
 import numpy as np
+import numpy as np
+import tensorflow as tf
+
+
 stemmer = LancasterStemmer()
 
 # Load data

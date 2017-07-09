@@ -4,33 +4,35 @@ Created on Jun 16, 2017
 @author: sarker
 '''
 
-import numpy as np
-from sklearn.neural_network import MLPClassifier
-from sklearn.neural_network import BaseMultilayerPerceptron
+from collections import Counter
+import datetime
+import datetime
+import itertools
+import json
+import os
+import pickle
+import re
+import time
+
+from bokeh.plotting import figure, output_file, show
+import nltk
+from nltk.stem.porter import *
 from sklearn.externals import joblib
 from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import chi2
 from sklearn.feature_selection import VarianceThreshold
-from bokeh.plotting import figure, output_file, show
+from sklearn.feature_selection import chi2
+from sklearn.neural_network import BaseMultilayerPerceptron
+from sklearn.neural_network import MLPClassifier
+
 import matplotlib.pyplot as plt
+import numpy as np
+import numpy as np
+import numpy as np
+import tensorflow as tf
+
 
 # Load Dataset
 # use natural language toolkit
-import nltk
-from nltk.stem.porter import *
-import os
-import json
-import datetime
-import numpy as np
-import re
-import itertools
-from collections import Counter
-import time
-import datetime
-import pickle
-
-import tensorflow as tf
-import numpy as np
 stemmer = PorterStemmer()
 
 

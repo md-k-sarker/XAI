@@ -6,26 +6,28 @@
 #          Jiyuan Qian
 # License: BSD 3 clause
 
-import numpy as np
+'''Import all the necessary imports of multilayer_perceptron.py'''
 
 from abc import ABCMeta, abstractmethod
-from scipy.optimize import fmin_l_bfgs_b
 import warnings
-'''Import all the necessary imports of multilayer_perceptron.py'''
+
+from scipy.optimize import fmin_l_bfgs_b
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
+from sklearn.exceptions import ConvergenceWarning
+from sklearn.externals import six
+from sklearn.model_selection import train_test_split
 from sklearn.neural_network._base import ACTIVATIONS, DERIVATIVES, LOSS_FUNCTIONS
 from sklearn.neural_network._stochastic_optimizers import SGDOptimizer, AdamOptimizer
-from sklearn.model_selection import train_test_split
-from sklearn.externals import six
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.utils import check_array, check_X_y, column_or_1d
 from sklearn.utils import gen_batches, check_random_state
 from sklearn.utils import shuffle
-from sklearn.utils import check_array, check_X_y, column_or_1d
-from sklearn.exceptions import ConvergenceWarning
 from sklearn.utils.extmath import safe_sparse_dot
-from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.multiclass import _check_partial_fit_first_call, unique_labels
 from sklearn.utils.multiclass import type_of_target
+from sklearn.utils.validation import check_is_fitted
+
+import numpy as np
 
 
 _STOCHASTIC_SOLVERS = ['sgd', 'adam']

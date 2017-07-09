@@ -4,8 +4,9 @@ Created on Jun 20, 2017
 @author: sarker
 '''
 
-import matplotlib.pyplot as plt
 import pickle
+
+import matplotlib.pyplot as plt
 
 
 figure_file = '../../data/20news-18828/2_class/model/fig.pickle'
