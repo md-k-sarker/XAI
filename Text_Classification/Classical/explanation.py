@@ -28,11 +28,6 @@ from Classical import utils as util
 from multilayer_perceptron_custom import MLPClassifier_Custom
 
 
-
-
-
-
-
 # from sklearn.neural_network import MLPClassifier
 # from bokeh.plotting import figure, output_file, show
 print("Program started")
@@ -88,9 +83,6 @@ predict_proba, activated_neurons_sport_hockey, activated_neurons_raw_sum_sport_h
 predict_proba_all, activated_neurons_all, activated_neurons_raw_sum_all = clf.predict_proba(
     X_test)
 print('len(X_test): ', len(X_test))
-
-
-
 
 
 
