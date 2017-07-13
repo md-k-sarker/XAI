@@ -1,6 +1,6 @@
 '''
 2 class Classifier and explainer.
-Classifier using sk-learn model 
+Classifier using sk-learn model
 '''
 '''
 Created on Jun 16, 2017
@@ -34,7 +34,7 @@ import tensorflow as tf
 # from sklearn.neural_network import MLPClassifier
 # from bokeh.plotting import figure, output_file, show
 def make_word_embeddings(x_text, y, y_label):
-    '''word embedding. 
+    '''word embedding.
     vector of all words'''
     words = []
     # If file is saved then just load the file
@@ -62,7 +62,7 @@ def make_word_embeddings(x_text, y, y_label):
     return words
 
 def create_document_and_classes_from_data(x_text, y, y_label):
-    # loop through each sample in x_text and create document as pair of (text,label) 
+    # loop through each sample in x_text and create document as pair of (text,label)
     documents = []
     classes = []
     for text, label in zip(x_text, y_label):
@@ -81,7 +81,7 @@ def convert_training_documents_to_vector(documents, classes,words):
     Parameters:
     documents = (text,label)
     classes = ['class_1', 'class_2']
-    
+
     Return:
     training: list_of[list_of_words_from_doc_1,list_of_words_from_doc_2....]
     [[]]
@@ -122,7 +122,7 @@ def convert_training_documents_to_vector(documents, classes,words):
                 bag.append(1) if w in pattern_words else bag.append(0)
 
             training.append(bag)
-            
+
             # convert output to vector
             # output is a '0' for each tag and '1' for current tag
             output_row = list(output_empty)
@@ -132,10 +132,10 @@ def convert_training_documents_to_vector(documents, classes,words):
         # save to cache
         with open(os.path.abspath(util.saving_bag_of_words_data_file), 'wb') as f:
             pickle.dump(training, f)
-    print("convert_training_documents_to_vector finished.")  
+    print("convert_training_documents_to_vector finished.")
     return training, output
 
-def train_NN(X_training, y_training):
+def train_NN(X_training, y_training,no_of_hidden_layer,max_iter):
     start_time = time.time()
     print('train_NN started...')
     if os.path.isfile(util.saving_classifier_model_file):
@@ -145,11 +145,14 @@ def train_NN(X_training, y_training):
     else:
         print('mlp initilizing started')
         no_of_hidden_neurons = ((len(X_training[0])))
-        mlp = MLPClassifier_Custom(hidden_layer_sizes=(no_of_hidden_neurons,
-                                                no_of_hidden_neurons,),
+        hidden_layer_sizes = ()
+        for i in range(no_of_hidden_layer):
+            hidden_layer_sizes += (no_of_hidden_neurons,)
+
+        mlp = MLPClassifier_Custom(hidden_layer_sizes=hidden_layer_sizes,
                             solver='adam', activation='relu',
                             learning_rate='adaptive', learning_rate_init=0.001,
-                            max_iter=100,
+                            max_iter=max_iter,
                             verbose=True, tol=0.000000001)
         print('clf: ', mlp)
 
@@ -225,4 +228,3 @@ def select_feature(X_training, X_test, y_training, y_test):
 
 
 # load data
-

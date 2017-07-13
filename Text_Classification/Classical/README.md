@@ -6,8 +6,8 @@ Trained model is saved in
 ```
 	|-- data
 	|   |-- 20news-18828
-	|   		|--2_class
-	|   			|--model
+	|   		|-- 2_class
+	|   			|-- model
 ```
 
 Trained model is more than 1 GB so not uploaded in github.

@@ -7,6 +7,13 @@ from collections import Counter
 import itertools
 import json
 import os
+import sys
+curr_path = os.path.dirname(__file__)
+path = os.path.abspath(os.path.join(curr_path,'..'))
+# path should be : '/Users/sarker/WorkSpaces/EclipseNeon/XAI/Text_Classification/'
+print('path: ', path)
+sys.path.append( path)
+
 import pickle
 import re
 import time
@@ -57,29 +64,31 @@ y_training = np.array(output)
 
 print('X_training.shape: ', X_training.shape)
 print('y_training.shape: ', y_training.shape)
-clf = classifier_2_class.train_NN(X_training, y_training)
+
+
+clf = classifier_2_class.train_NN(X_training, y_training,no_of_hidden_layer=5,max_iter=5)
 
 
 
-# 
+#
 # test data
 X_test, y_test = classifier_2_class.load_test_documents(util.test_file_dir,words)
 print('X_Test.shape: ', X_test.shape)
 print('y_test.shape: ', y_test.shape)
- 
+
 print('predicting started...')
 '''see difference in activated neurons for each class'''
 '''class_names: dict'''
 X_test_comp_windows = X_test[:2]
 X_rec_sport_hockey = X_test[2:4]
- 
- 
+
+
 predict_proba, activated_neurons_comp_windows, activated_neurons_raw_sum_comp_windows = clf.predict_proba(
     X_test_comp_windows)
 predict_proba, activated_neurons_sport_hockey, activated_neurons_raw_sum_sport_hockey = clf.predict_proba(
     X_rec_sport_hockey)
- 
- 
+
+
 predict_proba_all, activated_neurons_all, activated_neurons_raw_sum_all = clf.predict_proba(
     X_test)
 print('len(X_test): ', len(X_test))
@@ -123,7 +132,7 @@ for layer_i in range(2):
     #           activated_neurons_sport_hockey[layer_i])
 
     activated_for_all_class = activated_neurons_comp_windows[
-        layer_i] & activated_neurons_sport_hockey[layer_i] 
+        layer_i] & activated_neurons_sport_hockey[layer_i]
     # print('activated_for_all_class: ', activated_for_all_class)
 #     print('hidden_layer %s' % (layer_i + 1))
 #     print('activated_for_all_class: ', activated_for_all_class)
@@ -175,7 +184,7 @@ for layer_i in range(2):
 #         print()
     # fig3.scatter(x, y, color=color[layer_i], marker='.')
     # p3.square(x, y, size=2, color="olive", alpha=0.5)
-    
+
     '''using multiple figure'''
     lbl = 'hidden_layer_' + str(layer_i + 1)
     fig1.scatter(x, y_windows, color=color[layer_i],
@@ -235,7 +244,7 @@ with open(figure_file, 'wb') as f:
 
 '''load figure from saved data'''
 '''after loading from pickle zooming is not working'''
-    
+
 plt.show()
 
 # print('predict: ', clf.predict(X_test))
