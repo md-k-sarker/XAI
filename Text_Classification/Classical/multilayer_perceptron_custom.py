@@ -130,6 +130,7 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
             # calculate the values only for test set...
             # we have to implement it for train set also  
             if not training:
+                print('inside training')
                 activated_n = set()
                 activated_n_as_dict = {}
                 activated_n_raw_sum = np.zeros(activations[i + 1].shape[1])
@@ -303,7 +304,12 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
             coef_grads, intercept_grads = self._compute_loss_grad(
                 i - 1, n_samples, activations, deltas, coef_grads,
                 intercept_grads)
-
+        #print('loss.len: ', len(loss))
+        
+        '''for explanations start'''
+        for index, activation in enumerate(activations):
+            print('activations[%d]' %index, activation[index])
+        '''for explanations end'''
         return loss, coef_grads, intercept_grads
 
     def _initialize(self, y, layer_units):
@@ -413,10 +419,11 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
                            for n_fan_out in layer_units[1:])
         deltas = [np.empty_like(a_layer) for a_layer in activations]
 
+        # coef is weight matrix
         coef_grads = [np.empty((n_fan_in_, n_fan_out_)) for n_fan_in_,
                       n_fan_out_ in zip(layer_units[:-1],
                                         layer_units[1:])]
-
+        # intercept is bias
         intercept_grads = [np.empty(n_fan_out_) for n_fan_out_ in
                            layer_units[1:]]
 
@@ -521,7 +528,7 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
 
     def _fit_stochastic(self, X, y, activations, deltas, coef_grads,
                         intercept_grads, layer_units, incremental):
-
+        
         if not incremental or not hasattr(self, '_optimizer'):
             params = self.coefs_ + self.intercepts_
 

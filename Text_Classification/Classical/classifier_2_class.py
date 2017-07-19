@@ -33,18 +33,22 @@ import tensorflow as tf
 
 # from sklearn.neural_network import MLPClassifier
 # from bokeh.plotting import figure, output_file, show
-def make_word_embeddings(x_text, y, y_label):
+def make_word_embeddings(x_text, y, y_label, use_cache=False):
     '''word embedding.
     vector of all words'''
-    words = []
+    
     # If file is saved then just load the file
-    if os.path.isfile(util.saving_global_words_embedding_file):
+    if (os.path.isfile(util.saving_global_words_embedding_file) and use_cache):
+        words = []
         with open(os.path.abspath(util.saving_global_words_embedding_file), 'rb') as f:
             words = pickle.load(f)
 
     else:
+        words = []
+        
         # loop through each documents in our training data
         for each_text, each_y, each_label in zip(x_text, y, y_label):
+            # print('x_text: ', x_text)
             # tokenize each word in the document
             w = nltk.word_tokenize(each_text)
             # add to our words list
@@ -75,7 +79,7 @@ def create_document_and_classes_from_data(x_text, y, y_label):
 
     return documents, classes
 
-def convert_training_documents_to_vector(documents, classes,words):
+def convert_training_documents_to_vector(documents, classes, words, use_cache=False):
     '''
     Convert documents to vector.
     Parameters:
@@ -93,7 +97,7 @@ def convert_training_documents_to_vector(documents, classes,words):
     output = []
     output_empty = [0] * len(classes)
     # If file is saved then just load the file
-    if os.path.isfile(util.saving_bag_of_words_data_file):
+    if os.path.isfile(util.saving_bag_of_words_data_file) and use_cache:
         print(util.saving_bag_of_words_data_file, ' found in disk. loading it.')
         with open(os.path.abspath(util.saving_bag_of_words_data_file), 'rb') as f:
             training = pickle.load(f)
@@ -135,13 +139,20 @@ def convert_training_documents_to_vector(documents, classes,words):
     print("convert_training_documents_to_vector finished.")
     return training, output
 
-def train_NN(X_training, y_training,no_of_hidden_layer,max_iter):
+def train_NN(X_training, y_training, no_of_hidden_layer, max_iter, use_cache=False, for_keyword=False):
     start_time = time.time()
     print('train_NN started...')
-    if os.path.isfile(util.saving_classifier_model_file):
-        print('existing mlp model found in cache. loading it.')
-        clf = joblib.load(util.saving_classifier_model_file)
-        print('clf: ', clf)
+    if  use_cache:
+        if for_keyword:
+            if os.path.isfile(util.saving_classifier_model_keyword_file): 
+                print('existing keyword mlp model found in cache. loading it.')
+                clf = joblib.load(util.saving_classifier_model_keyword_file)
+                print('clf: ', clf)
+        else:
+            if os.path.isfile(util.saving_classifier_model_file): 
+                print('existing mlp model found in cache. loading it.')
+                clf = joblib.load(util.saving_classifier_model_file)
+                print('clf: ', clf)
     else:
         print('mlp initilizing started')
         no_of_hidden_neurons = ((len(X_training[0])))
@@ -161,14 +172,17 @@ def train_NN(X_training, y_training,no_of_hidden_layer,max_iter):
         print('mlp fitting finished')
 
         '''save to disk'''
-        joblib.dump(mlp, util.saving_classifier_model_file)
+        if for_keyword:
+            joblib.dump(mlp, util.saving_classifier_model_keyword_file)
+        else:
+            joblib.dump(mlp, util.saving_classifier_model_file)            
         clf = mlp
     end_time = time.time()
     print('trained in: ', end_time - start_time, ' seconds')
     print('train_NN finished')
     return clf
 
-def load_test_documents(test_file_dir,words):
+def load_test_documents(test_file_dir, words):
     X_test = []
     y_test = []
     class_names = {}

@@ -233,7 +233,7 @@ with tf.name_scope('Model'):
     
 with tf.name_scope('Loss'):
     # Softmax Cross entropy (cost function)
-    loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
+    loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred_keyword, labels=y))
     loss_keyword = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred_keyword, labels=y))
 
 with tf.name_scope('SGD'):

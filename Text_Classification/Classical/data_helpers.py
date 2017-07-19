@@ -41,6 +41,67 @@ def clean_str(string):
     string = re.sub(r"\s{2,}", " ", string)
     return string.strip().lower()
 
+def load_keywords_and_labels(train_data_folder, saved_file,use_cache = False):
+    """
+    Loads 20news group dataset data from files, splits the data into words and generates labels.
+    Returns split documents and labels.
+    """
+    
+    # If file is saved then just load the file
+    if os.path.isfile(saved_file) and use_cache:
+        x_text, y, y_label = load_data_from_cache(saved_file)
+        return [x_text, y, y_label]
+
+    else:
+        # Load data from files
+        x_keywords = []
+        x_text = []
+        y_label = []
+        y_textual_label = []
+        counter = 0
+        for folder_name in os.listdir(train_data_folder):
+            if not folder_name.startswith('.'):
+                for file_name in os.listdir(os.path.join(train_data_folder, folder_name)):
+                    if ((not file_name.startswith('.')) and ( not file_name.endswith('keyword'))):
+                        examples = open(os.path.join(train_data_folder, folder_name, file_name),
+                                        mode='r', encoding='utf-8', errors='ignore').read().strip()
+
+                        # Split by words
+                        words_for_keyword = [word for word in nltk.word_tokenize(clean_str(examples))]
+                        words_for_text = clean_str(examples) 
+                        
+                        most_common_words = ""
+                        for word, word_count in Counter(words_for_keyword).most_common(8):
+                            most_common_words += " "
+                            most_common_words += word 
+                        x_keywords.append(most_common_words)
+                        x_text.append(words_for_text)
+#                         print('examples: ', examples)
+#                         print('words_for_keyword: ', words_for_keyword)
+#                         print('words_for_text: ', words_for_text)
+#                         print('keywords: ', most_common_words)
+#                         print()
+                        label = [0] * 2
+                        label[counter] = 1
+                        y_label.append(label)
+                        y_textual_label.append(folder_name)
+                counter += 1
+        
+        # here np.concatenate and np.array both performing the same operations.
+        # and making
+        #  [[1 0]
+        #   ....
+        #   [0 1]
+        #   [0 1]
+        #   [0 1]]
+        y = np.concatenate([y_label], axis=0)
+        y_ = np.array(y_label)
+        #save_data_to_cache([x_text, y, y_textual_label], saved_file)
+        #print('x_keyword: ', x_keywords)
+        #print('x_text: ', x_text)
+        return [x_keywords, y, y_textual_label]
+
+
 
 def load_data_and_labels(train_data_folder, saved_file):
     """
