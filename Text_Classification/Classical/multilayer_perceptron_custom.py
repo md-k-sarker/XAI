@@ -85,7 +85,7 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
             start, end = self._intercept_indptr[i]
             self.intercepts_[i] = packed_parameters[start:end]
 
-    def _forward_pass(self, activations,training=True):
+    def _forward_pass(self, activations, training=True):
         """Perform a forward pass on the network by computing the values
         of the neurons in the hidden layers and the output layer.
 
@@ -130,11 +130,11 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
             # calculate the values only for test set...
             # we have to implement it for train set also  
             if not training:
-                print('inside training')
+                # print('inside training')
                 activated_n = set()
                 activated_n_as_dict = {}
                 activated_n_raw_sum = np.zeros(activations[i + 1].shape[1])
-                #print('layer : ',(i+1))
+                # print('layer : ',(i+1))
                 for input_instance_i in activations[i + 1]:
                     neuron_set = set(index for index, value in enumerate(
                         input_instance_i) if value >= np.mean(input_instance_i))
@@ -143,15 +143,15 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
                     activated_n_raw_sum += np.array([1 if value >= np.mean(
                         input_instance_i) else 0 for value in input_instance_i])
                     activated_n |= neuron_set
-                    #print('neurons: ', neuron)
-                    #print('activated_n: ',activated_n)
+                    # print('neurons: ', neuron)
+                    # print('activated_n: ',activated_n)
                 # print('')
                 activated_neurons.append(activated_n)
                 activated_neurons_raw_sum.append(activated_n_raw_sum)
-                #print('activated_neurons: ',activated_neurons)
+                # print('activated_neurons: ',activated_neurons)
                 # print('')
                 # print('')
-                #print('activations[%s]: ' %(i+1), type(activations[i+1]), activations[i+1].shape,activations[i+1])
+                # print('activations[%s]: ' %(i+1), type(activations[i+1]), activations[i+1].shape,activations[i+1])
             '''for explanations end'''
             
                 
@@ -269,7 +269,7 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
 
         # Forward propagate
         '''for explanations start'''
-        activations, activated_neurons, activated_neurons_raw_sum = self._forward_pass(activations,training=True)
+        activations, activated_neurons, activated_neurons_raw_sum = self._forward_pass(activations, training=True)
         '''for explanations end'''
         
         # Get loss
@@ -304,11 +304,11 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
             coef_grads, intercept_grads = self._compute_loss_grad(
                 i - 1, n_samples, activations, deltas, coef_grads,
                 intercept_grads)
-        #print('loss.len: ', len(loss))
+        # print('loss.len: ', len(loss))
         
         '''for explanations start'''
-        for index, activation in enumerate(activations):
-            print('activations[%d]' %index, activation[index])
+#         for index, activation in enumerate(activations):
+#             print('activations[%d]' %index, activation[index])
         '''for explanations end'''
         return loss, coef_grads, intercept_grads
 
@@ -360,7 +360,7 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
             init_bound = np.sqrt(6. / (fan_in + fan_out))
         else:
             # this was caught earlier, just to make sure
-            raise ValueError("Unknown activation function %s" %
+            raise ValueError("Unknown activation function %s" % 
                              self.activation)
 
         coef_init = self._random_state.uniform(-init_bound, init_bound,
@@ -379,7 +379,7 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
         # Validate input parameters.
         self._validate_hyperparameters()
         if np.any(np.array(hidden_layer_sizes) <= 0):
-            raise ValueError("hidden_layer_sizes must be > 0, got %s." %
+            raise ValueError("hidden_layer_sizes must be > 0, got %s." % 
                              hidden_layer_sizes)
 
         X, y = self._validate_input(X, y, incremental)
@@ -391,7 +391,7 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
 
         self.n_outputs_ = y.shape[1]
 
-        layer_units = ([n_features] + hidden_layer_sizes +
+        layer_units = ([n_features] + hidden_layer_sizes + 
                        [self.n_outputs_])
 
         # check random state
@@ -429,18 +429,22 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
 
         # Run the Stochastic optimization solver
         if self.solver in _STOCHASTIC_SOLVERS:
-            self._fit_stochastic(X, y, activations, deltas, coef_grads,
+            '''for explanation start'''
+            activations_over_all_itr = self._fit_stochastic(X, y, activations, deltas, coef_grads,
                                  intercept_grads, layer_units, incremental)
+            '''for explanation end'''
 
         # Run the LBFGS solver
         elif self.solver == 'lbfgs':
             self._fit_lbfgs(X, y, activations, deltas, coef_grads,
                             intercept_grads, layer_units)
-        return self
+        ''' for explanation start'''
+        return self,  activations_over_all_itr
+        ''' for explanation end'''
 
     def _validate_hyperparameters(self):
         if not isinstance(self.shuffle, bool):
-            raise ValueError("shuffle must be either True or False, got %s." %
+            raise ValueError("shuffle must be either True or False, got %s." % 
                              self.shuffle)
         if self.max_iter <= 0:
             raise ValueError("max_iter must be > 0, got %s." % self.max_iter)
@@ -448,10 +452,10 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
             raise ValueError("alpha must be >= 0, got %s." % self.alpha)
         if (self.learning_rate in ["constant", "invscaling", "adaptive"] and
                 self.learning_rate_init <= 0.0):
-            raise ValueError("learning_rate_init must be > 0, got %s." %
+            raise ValueError("learning_rate_init must be > 0, got %s." % 
                              self.learning_rate)
         if self.momentum > 1 or self.momentum < 0:
-            raise ValueError("momentum must be >= 0 and <= 1, got %s" %
+            raise ValueError("momentum must be >= 0 and <= 1, got %s" % 
                              self.momentum)
         if not isinstance(self.nesterovs_momentum, bool):
             raise ValueError("nesterovs_momentum must be either True or False,"
@@ -463,10 +467,10 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
             raise ValueError("validation_fraction must be >= 0 and < 1, "
                              "got %s" % self.validation_fraction)
         if self.beta_1 < 0 or self.beta_1 >= 1:
-            raise ValueError("beta_1 must be >= 0 and < 1, got %s" %
+            raise ValueError("beta_1 must be >= 0 and < 1, got %s" % 
                              self.beta_1)
         if self.beta_2 < 0 or self.beta_2 >= 1:
-            raise ValueError("beta_2 must be >= 0 and < 1, got %s" %
+            raise ValueError("beta_2 must be >= 0 and < 1, got %s" % 
                              self.beta_2)
         if self.epsilon <= 0.0:
             raise ValueError("epsilon must be > 0, got %s." % self.epsilon)
@@ -478,12 +482,12 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
                              "activations are %s." % (self.activation,
                                                       supported_activations))
         if self.learning_rate not in ["constant", "invscaling", "adaptive"]:
-            raise ValueError("learning rate %s is not supported. " %
+            raise ValueError("learning rate %s is not supported. " % 
                              self.learning_rate)
         supported_solvers = _STOCHASTIC_SOLVERS + ["lbfgs"]
         if self.solver not in supported_solvers:
             raise ValueError("The solver %s is not supported. "
-                             " Expected one of: %s" %
+                             " Expected one of: %s" % 
                              (self.solver, ", ".join(supported_solvers)))
 
     def _fit_lbfgs(self, X, y, activations, deltas, coef_grads,
@@ -559,7 +563,10 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
             batch_size = min(200, n_samples)
         else:
             batch_size = np.clip(self.batch_size, 1, n_samples)
-
+        
+        '''for explanation start'''
+        activations_over_all_itr = []
+        '''for explanation end'''
         try:
             for it in range(self.max_iter):
                 X, y = shuffle(X, y, random_state=self._random_state)
@@ -569,13 +576,15 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
                     batch_loss, coef_grads, intercept_grads = self._backprop(
                         X[batch_slice], y[batch_slice], activations, deltas,
                         coef_grads, intercept_grads)
-                    accumulated_loss += batch_loss * (batch_slice.stop -
+                    accumulated_loss += batch_loss * (batch_slice.stop - 
                                                       batch_slice.start)
 
                     # update weights
                     grads = coef_grads + intercept_grads
                     self._optimizer.update_params(grads)
-
+                '''for explanation start'''
+                activations_over_all_itr.append(activations)
+                '''for explanation end'''
                 self.n_iter_ += 1
                 self.loss_ = accumulated_loss / X.shape[0]
 
@@ -624,6 +633,10 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
             # restore best weights
             self.coefs_ = self._best_coefs
             self.intercepts_ = self._best_intercepts
+        
+        '''for explanation start'''
+        return activations_over_all_itr
+        '''for explanation end'''
 
     def _update_no_improvement_count(self, early_stopping, X_val, y_val):
         if early_stopping:
@@ -637,7 +650,7 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
             # let's hope no-one overloads .score with mse
             last_valid_score = self.validation_scores_[-1]
 
-            if last_valid_score < (self.best_validation_score_ +
+            if last_valid_score < (self.best_validation_score_ + 
                                    self.tol):
                 self._no_improvement_count += 1
             else:
@@ -732,7 +745,7 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
             activations.append(m)
         # forward propagate
         '''for explanations start'''
-        activations, activated_neurons, activated_neurons_raw_sum = self._forward_pass(activations,training=False)
+        activations, activated_neurons, activated_neurons_raw_sum = self._forward_pass(activations, training=False)
         '''for explanations end'''
         y_pred = activations[-1]
         '''for explanations start'''
@@ -978,13 +991,13 @@ class MLPClassifier_Custom(BaseMultilayerPerceptron_Custom, ClassifierMixin):
             if set(classes) != set(self.classes_):
                 raise ValueError("warm_start can only be used where `y` has "
                                  "the same classes as in the previous "
-                                 "call to fit. Previously got %s, `y` has %s" %
+                                 "call to fit. Previously got %s, `y` has %s" % 
                                  (self.classes_, classes))
         else:
             classes = unique_labels(y)
             if np.setdiff1d(classes, self.classes_, assume_unique=True):
                 raise ValueError("`y` has classes not in `self.classes_`."
-                                 " `self.classes_` has %s. 'y' has %s." %
+                                 " `self.classes_` has %s. 'y' has %s." % 
                                  (self.classes_, classes))
 
         y = self._label_binarizer.transform(y)

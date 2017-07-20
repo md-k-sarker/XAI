@@ -124,189 +124,220 @@ def get_data():
 X_train, X_test, y_train, y_test, X_training_keyword, \
     y_training_keyword, words, words_keywords = get_data()
 
-print('y_training_keyword: ', y_training_keyword)
+# print('y_training_keyword: ', y_training_keyword)
 print('words_keywords: ', words_keywords)
 
-#clf = classifier_2_class.train_NN(X_train, y_train, no_of_hidden_layer=5, max_iter=1, use_cache=False)
-clf_keyword = classifier_2_class.train_NN(X_training_keyword, y_training_keyword, \
+clf, activations_over_all_itr = classifier_2_class.train_NN(X_train, y_train, no_of_hidden_layer=5, max_iter=1, use_cache=False)
+clf_keyword , activations_over_all_itr_keyword = classifier_2_class.train_NN(X_training_keyword, y_training_keyword, \
                                            no_of_hidden_layer=5, max_iter=1, use_cache=False, for_keyword=True)
 
+# for index, activations in enumerate(activations_over_all_itr_keyword):
+#     for index_, activation in enumerate(activations):
+#         # print('activations[%d]' % index_, activation[index_])
+#         # pass
+    
+# visualize informations
+
+
  
-# 
-# print('predicting started...')
-# '''see difference in activated neurons for each class'''
-# '''class_names: dict'''
-# X_test_comp_windows = X_test[:2]
-# X_rec_sport_hockey = X_test[2:4]
-# 
-# 
-# predict_proba, activated_neurons_comp_windows, activated_neurons_raw_sum_comp_windows = clf.predict_proba(
-#     X_test_comp_windows)
-# predict_proba, activated_neurons_sport_hockey, activated_neurons_raw_sum_sport_hockey = clf.predict_proba(
-#     X_rec_sport_hockey)
-# 
-# 
-# predict_proba_all, activated_neurons_all, activated_neurons_raw_sum_all = clf.predict_proba(
-#     X_test)
-# print('len(X_test): ', len(X_test))
-# 
-# 
-# 
-# '''Plot for each class'''
-# # 3474
-# # output to static HTML file
-# # output_file("square.html")
-# 
-# # p1 = figure()
-# # p2 = figure()
-# # p3 = figure()
-# 
-# # fig = plt.figure()
-# 
-# # fig1 for comp.windows.x
-# fig1 = plt.figure(1).add_subplot(111)  # fig.add_subplot(1, 3, 1)
-# fig1.set_title('class comp.windows_x')
-# 
-# # fig2 for rec.sport.hockey
-# fig2 = plt.figure(2).add_subplot(111)  # fig.add_subplot(1, 3, 2)
-# fig2.set_title('class sport_hockey')
-# 
-# # fig3 for all 2 class
-# fig3 = plt.figure(3).add_subplot(111)  # fig.add_subplot(1, 3, 3)
-# fig3.set_title('both classes without weighted activation')
-# 
-# # fig4 for all 2 class with weighted activations
-# fig4 = plt.figure(4).add_subplot(111)
-# fig4.set_title('both classes weighted activation')
-# 
-# 
-# color = ['green', 'black', 'olive']
-# 
-# for layer_i in range(2):
-#     #     print('activated_neurons_comp_windows: ',
-#     #           activated_neurons_comp_windows[layer_i])
-#     #     print('activated_neurons_sport_hockey: ',
-#     #           activated_neurons_sport_hockey[layer_i])
-# 
-#     activated_for_all_class = activated_neurons_comp_windows[
-#         layer_i] & activated_neurons_sport_hockey[layer_i]
-#     # print('activated_for_all_class: ', activated_for_all_class)
-# #     print('hidden_layer %s' % (layer_i + 1))
-# #     print('activated_for_all_class: ', activated_for_all_class)
-# #     print('activated_neurons_only_for_comp_windows: ',
-# #           activated_neurons_comp_windows[
-# #               layer_i] - activated_for_all_class)
-# #     print('activated_neurons_only_for_sport_hockey',
-# #           activated_neurons_sport_hockey[layer_i] - activated_for_all_class)
-# #     print('\n')
-#     x = [layer_i + 1] * len(words)
-# 
-#     # add a square renderer with a size, color, and alpha
-#     y_windows = [0] * len(words)
-#     y_hockey = [0] * len(words)
-#     y_raw_all = [0] * len(words)
-#     '''s_raw_all : size of the points'''
-#     s_raw_all = [0] * len(words)
-# 
-#     for index in activated_neurons_comp_windows[layer_i]:
-#         y_windows[index] = index
-# 
-#     # fig1.scatter(x, y, color=color[layer_i], marker='.')
-#     # p1.square(x, y, size=2, color="olive", alpha=0.5)
-# 
-#     for index in activated_neurons_sport_hockey[layer_i]:
-#         y_hockey[index] = index
-#     # fig2.scatter(x, y, color=color[layer_i], marker='.')
-#     # p2.square(x, y, size=2, color="olive", alpha=0.5)
-# 
-# 
-#     for index, value in enumerate(activated_neurons_raw_sum_all[layer_i]):
-#         if value > 0:
-#             y_raw_all[index] = index
-#             s_raw_all[index] = value * 10
-#         else:
-#             y_raw_all[index] = 0
-#             s_raw_all[index] = 0
-# 
-# #     print('activated_neurons_raw_sum_all[layer_i]: ',
-# #           len(y_raw_all), y_raw_all)
-# 
-# 
-# #     if layer_i == 0:
-# #         print()
-# #         print('activated_neurons_raw_sum_all[layer_i]: ',
-# #               activated_neurons_raw_sum_all[layer_i])
-# #         # print('y_raw_all: ', y_raw_all)
-# #         # print('s_raw_all: ', s_raw_all)
-# #         print()
-#     # fig3.scatter(x, y, color=color[layer_i], marker='.')
-#     # p3.square(x, y, size=2, color="olive", alpha=0.5)
-# 
-#     '''using multiple figure'''
-#     lbl = 'hidden_layer_' + str(layer_i + 1)
-#     fig1.scatter(x, y_windows, color=color[layer_i],
-#                  marker='.', label=lbl)
-#     fig2.scatter(x, y_hockey, color=color[layer_i],
-#                  marker='.', label=lbl)
-# 
-#     '''using single figure'''
-#     fig3.scatter(np.array(x) - .05, y_windows, color=color[0],
-#                  marker='.')
-#     fig3.scatter(np.array(x) + .05 , y_hockey, color=color[1],
-#                  marker='.')
-# 
-#     '''using weighted bubble'''
-#     fig4.scatter(x, y_raw_all, s=s_raw_all, color=color[layer_i],
-#                  marker='.', label=lbl)
-# 
-# # show the results
-# # show(p1)
-# # show(p2)
-# # show(p3)
-# y_ticks = [x for x in range(0, len(words))]
-# fig1.set_xticks([1, 2])
-# fig2.set_xticks([1, 2])
-# fig3.set_xticks([1, 1, 2, 2])
-# fig4.set_xticks([1, 2])
-# 
-# # fig1.set_yticks(y_ticks)
-# # fig2.set_yticks(y_ticks)
-# # fig3.set_yticks(y_ticks)
-# # fig4.set_yticks(y_ticks)
-# # fig5.set_yticks(y_ticks)
-# 
-# fig1.set_xlabel('hidden_layers ')
-# fig2.set_xlabel('hidden_layers')
-# fig3.set_xlabel('hidden_layers')
-# fig4.set_xlabel('hidden_layers')
-# 
-# fig1.set_ylabel('n\'th neuron')
-# fig2.set_ylabel('n\'th neuron')
-# fig3.set_ylabel('n\'th neuron')
-# fig4.set_ylabel('n\'th neuron')
-# 
-# # fig4.set_label(['computer', 'guns', 'hockey', 'computer',
-# #                 'guns', 'hockey', 'computer', 'guns', 'hockey'])
-# 
-# fig1.legend(loc='upper left')
-# fig2.legend(loc='upper left')
-# fig3.legend(['class comp.windows_x', 'class sport_hockey'], loc='upper left')
-# fig4.legend(loc='upper left')
-# 
-# '''dump to pickle'''
-# figure_file = '../../data/20news-18828/2_class/model/fig.pickle'
-# 
-# with open(figure_file, 'wb') as f:
-#     pickle.dump([fig1, fig2, fig3, fig4], f)
-# 
-# '''load figure from saved data'''
-# '''after loading from pickle zooming is not working'''
-# 
-# plt.show()
-# 
-# # print('predict: ', clf.predict(X_test))
-# # predict_proba, activated_neurons = clf.predict_proba(X_test)
-# # print('predict_proba: ', predict_proba)
-# 
-# # for i, neurons in enumerate(activated_neurons):
-# #     print('layer %s: ' % (i + 1), neurons)
+ 
+print('predicting started...')
+'''see difference in activated neurons for each class'''
+'''class_names: dict'''
+X_test_comp_windows = X_test[:2]
+X_rec_sport_hockey = X_test[2:4]
+ 
+ 
+predict_proba, activated_neurons_comp_windows, activated_neurons_raw_sum_comp_windows = clf.predict_proba(
+    X_test_comp_windows)
+predict_proba, activated_neurons_sport_hockey, activated_neurons_raw_sum_sport_hockey = clf.predict_proba(
+    X_rec_sport_hockey)
+ 
+ 
+predict_proba_all, activated_neurons_all, activated_neurons_raw_sum_all = clf.predict_proba(
+    X_test)
+print('len(X_test): ', len(X_test))
+ 
+ 
+ 
+'''Plot for each class'''
+# 3474
+# output to static HTML file
+# output_file("square.html")
+ 
+# p1 = figure()
+# p2 = figure()
+# p3 = figure()
+ 
+# fig = plt.figure()
+ 
+# fig1 for comp.windows.x
+fig1 = plt.figure(1).add_subplot(111)  # fig.add_subplot(1, 3, 1)
+fig1.set_title('class comp.windows_x')
+ 
+# fig2 for rec.sport.hockey
+fig2 = plt.figure(2).add_subplot(111)  # fig.add_subplot(1, 3, 2)
+fig2.set_title('class sport_hockey')
+ 
+# fig3 for all 2 class
+fig3 = plt.figure(3).add_subplot(111)  # fig.add_subplot(1, 3, 3)
+fig3.set_title('both classes without weighted activation')
+ 
+# fig4 for all 2 class with weighted activations
+fig4 = plt.figure(4).add_subplot(111)
+fig4.set_title('both classes weighted activation')
+
+# fig5 i.e. fig_keyword for keywords
+fig_keyword = plt.figure(5).add_subplot(111)
+fig_keyword.set_title('both classes weighted activation for keywords') 
+ 
+color = ['green', 'black', 'olive', 'cyan', 'green', 'blue']
+ 
+for layer_i in range(1, 5, 1):
+    #     print('activated_neurons_comp_windows: ',
+    #           activated_neurons_comp_windows[layer_i])
+    #     print('activated_neurons_sport_hockey: ',
+    #           activated_neurons_sport_hockey[layer_i])
+ 
+    activated_for_all_class = activated_neurons_comp_windows[
+        layer_i] & activated_neurons_sport_hockey[layer_i]
+    # print('activated_for_all_class: ', activated_for_all_class)
+#     print('hidden_layer %s' % (layer_i + 1))
+#     print('activated_for_all_class: ', activated_for_all_class)
+#     print('activated_neurons_only_for_comp_windows: ',
+#           activated_neurons_comp_windows[
+#               layer_i] - activated_for_all_class)
+#     print('activated_neurons_only_for_sport_hockey',
+#           activated_neurons_sport_hockey[layer_i] - activated_for_all_class)
+#     print('\n')
+    x = [layer_i ] * len(words)
+    x_keyword = [layer_i] * len(words_keywords)
+    y_keyword = [i for i in range(1, 122, 1)]
+    itr_no = 0
+    bubble_size_keyword = [i * 10 for i in activations_over_all_itr_keyword[itr_no][layer_i]]
+ 
+    # add a square renderer with a size, color, and alpha
+    y_windows = [0] * len(words)
+    y_hockey = [0] * len(words)
+    y_raw_all = [0] * len(words)
+    '''s_raw_all : size of the points'''
+    s_raw_all = [0] * len(words)
+ 
+    for index in activated_neurons_comp_windows[layer_i]:
+        y_windows[index] = index
+ 
+    # fig1.scatter(x, y, color=color[layer_i], marker='.')
+    # p1.square(x, y, size=2, color="olive", alpha=0.5)
+ 
+    for index in activated_neurons_sport_hockey[layer_i]:
+        y_hockey[index] = index
+    # fig2.scatter(x, y, color=color[layer_i], marker='.')
+    # p2.square(x, y, size=2, color="olive", alpha=0.5)
+ 
+ 
+    for index, value in enumerate(activated_neurons_raw_sum_all[layer_i]):
+        if value > 0:
+            y_raw_all[index] = index
+            s_raw_all[index] = value * 50
+        else:
+            y_raw_all[index] = 0
+            s_raw_all[index] = 0
+ 
+#     print('activated_neurons_raw_sum_all[layer_i]: ',
+#           len(y_raw_all), y_raw_all)
+ 
+ 
+#     if layer_i == 0:
+#         print()
+#         print('activated_neurons_raw_sum_all[layer_i]: ',
+#               activated_neurons_raw_sum_all[layer_i])
+#         # print('y_raw_all: ', y_raw_all)
+#         # print('s_raw_all: ', s_raw_all)
+#         print()
+    # fig3.scatter(x, y, color=color[layer_i], marker='.')
+    # p3.square(x, y, size=2, color="olive", alpha=0.5)
+ 
+    '''using multiple figure'''
+    lbl = 'hidden_layer_' + str(layer_i)
+    fig1.scatter(x, y_windows, color=color[layer_i],
+                 marker='.', label=lbl)
+    fig2.scatter(x, y_hockey, color=color[layer_i],
+                 marker='.', label=lbl)
+ 
+    '''using single figure'''
+    fig3.scatter(np.array(x) - .05, y_windows, color=color[0],
+                 marker='.')
+    fig3.scatter(np.array(x) + .05 , y_hockey, color=color[1],
+                 marker='.')
+ 
+    '''using weighted bubble'''
+    x_ = [i - .1 for i in x]
+    fig4.scatter(x_, y_raw_all, s=s_raw_all, color=color[layer_i],
+                 marker='.', label=lbl)
+    
+    '''added in figure 4'''
+    x_keyword_ = [i + .1 for i in x_keyword]
+    fig4.scatter(x_keyword_, y_keyword, s=bubble_size_keyword,
+                        color=color[layer_i], marker='.', label=lbl)
+    
+    '''only keywords'''
+    fig_keyword.scatter(x_keyword, y_keyword, s=bubble_size_keyword,
+                        color=color[layer_i], marker='.', label=lbl)
+ 
+# show the results
+# show(p1)
+# show(p2)
+# show(p3)
+y_ticks = [x for x in range(0, len(words))]
+x_ticks = [x for x in range(0, 5, 1)]
+fig1.set_xticks(x_ticks)
+fig2.set_xticks(x_ticks)
+fig3.set_xticks(x_ticks)
+fig4.set_xticks(x_ticks)
+fig_keyword.set_xticks(x_ticks)
+ 
+# fig1.set_yticks(y_ticks)
+# fig2.set_yticks(y_ticks)
+# fig3.set_yticks(y_ticks)
+# fig4.set_yticks(y_ticks)
+# fig5.set_yticks(y_ticks)
+ 
+fig1.set_xlabel('hidden_layers ')
+fig2.set_xlabel('hidden_layers')
+fig3.set_xlabel('hidden_layers')
+fig4.set_xlabel('hidden_layers')
+fig_keyword.set_xlabel('hidden_layers')
+ 
+fig1.set_ylabel('n\'th neuron')
+fig2.set_ylabel('n\'th neuron')
+fig3.set_ylabel('n\'th neuron')
+fig4.set_ylabel('n\'th neuron')
+fig_keyword.set_xlabel('hidden_layers')
+ 
+# fig4.set_label(['computer', 'guns', 'hockey', 'computer',
+#                 'guns', 'hockey', 'computer', 'guns', 'hockey'])
+ 
+fig1.legend(loc='upper left')
+fig2.legend(loc='upper left')
+fig3.legend(['class comp.windows_x', 'class sport_hockey'], loc='upper left')
+fig4.legend(loc='upper left')
+fig_keyword.legend(loc='upper left')
+ 
+'''dump to pickle'''
+figure_file = '../../data/20news-18828/2_class/model/fig.pickle'
+ 
+with open(figure_file, 'wb') as f:
+    pickle.dump([fig1, fig2, fig3, fig4, fig_keyword], f)
+ 
+'''load figure from saved data'''
+'''after loading from pickle zooming is not working'''
+
+print('figure display starts...') 
+plt.show()
+print('figure closed') 
+# print('predict: ', clf.predict(X_test))
+# predict_proba, activated_neurons = clf.predict_proba(X_test)
+# print('predict_proba: ', predict_proba)
+ 
+# for i, neurons in enumerate(activated_neurons):
+#     print('layer %s: ' % (i + 1), neurons)

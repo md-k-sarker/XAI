@@ -168,7 +168,7 @@ def train_NN(X_training, y_training, no_of_hidden_layer, max_iter, use_cache=Fal
         print('clf: ', mlp)
 
         print('mlp fitting started...')
-        mlp.fit(X_training, y_training)
+        mlp, activations = mlp.fit(X_training, y_training)
         print('mlp fitting finished')
 
         '''save to disk'''
@@ -180,7 +180,7 @@ def train_NN(X_training, y_training, no_of_hidden_layer, max_iter, use_cache=Fal
     end_time = time.time()
     print('trained in: ', end_time - start_time, ' seconds')
     print('train_NN finished')
-    return clf
+    return clf,activations
 
 def load_test_documents(test_file_dir, words):
     X_test = []
