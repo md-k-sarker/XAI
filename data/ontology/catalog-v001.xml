@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<catalog prefer="public" xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+    <uri id="Imports Wizard Entry" name="http://www.sumoOntology.org/sumo#" uri="sumo_full.owl"/>
+    <group id="Folder Repository, directory=, recursive=true, Auto-Update=true, version=2" prefer="public" xml:base="">
+        <uri id="Automatically generated entry, Timestamp=1501602378942" name="duplicate:http://micra.com/COSMO/COSMO.owl" uri="COSMO.owl"/>
+        <uri id="Automatically generated entry, Timestamp=1501602378942" name="duplicate:http://micra.com/COSMO/COSMO.owl" uri="cosomo_sumo.owl"/>
+        <uri id="Automatically generated entry, Timestamp=1501602378942" name="http://www.ontologyportal.org/SUMO.owl" uri="sumo_full.owl"/>
+    </group>
+</catalog>
