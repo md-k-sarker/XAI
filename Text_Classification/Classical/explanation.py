@@ -242,7 +242,7 @@ for layer_i in range(1, 5, 1):
 #     print('\n')
     x = [layer_i ] * len(words)
     x_keyword = [layer_i] * len(words_keywords)
-    y_keyword = [i for i in range(1, 122, 1)]
+    y_keyword = [i for i in range(1, len(words_keywords)+1, 1)]
     itr_no = 0
     bubble_size_keyword = [i * 10 for i in activations_over_all_itr_keyword[itr_no][layer_i]]
  
@@ -307,6 +307,8 @@ for layer_i in range(1, 5, 1):
     
     '''added in figure 4'''
     x_keyword_ = [i + .1 for i in x_keyword]
+    print('len(x_keyword): ', len(x_keyword))
+    print('len(y_keyword): ', len(y_keyword))
     fig4.scatter(x_keyword_, y_keyword, s=bubble_size_keyword,
                         color=color[layer_i], marker='.', label=lbl)
     

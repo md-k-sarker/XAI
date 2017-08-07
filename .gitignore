@@ -4,6 +4,7 @@ data/preloaded
 Text_Classification/CNN/runs/
 *.dt
 *.pickle
+*.pkl
 
 .metadata
 bin/
