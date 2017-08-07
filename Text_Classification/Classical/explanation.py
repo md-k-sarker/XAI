@@ -139,6 +139,34 @@ clf_keyword , activations_over_all_itr_keyword = classifier_2_class.train_NN(X_t
 # visualize informations
 
 
+'''train phase:
+ input_keyword = X_training_keyword
+ l1_keyword = from ontoloy
+ l2_keyword = from ontology
+ l3_keyword = from ontology
+ l4_keyword = from ontology
+ 
+ explanation phase
+ input_keyword = from ontology only related keywords others are 0
+ l1_keyword = from ontoloy
+ l2_keyword = from ontology
+ l3_keyword = from ontology
+ l4_keyword = from ontology
+ mapping keywords with cluster of activation'''
+
+'''for explanation''' 
+l1_key = X_training_keyword
+l2_key = ['sport','entertainment'] 
+l3_key = ['intentional_process','motion','power_generation'] 
+l4_key = [ 'process','object','physical_system'] 
+l5_key = ['OWL_Thing'] 
+
+
+l1_r_key = 'OWL_Thing'
+l2_r_key = [ 'process','object','physical_system']
+l3_r_key = ['intentional_process','motion','power_generation'] 
+l4_r_key = ['sport','entertainment']  
+l5_r_key = [''] 
  
  
 print('predicting started...')
@@ -192,6 +220,8 @@ fig_keyword = plt.figure(5).add_subplot(111)
 fig_keyword.set_title('both classes weighted activation for keywords') 
  
 color = ['green', 'black', 'olive', 'cyan', 'green', 'blue']
+
+
  
 for layer_i in range(1, 5, 1):
     #     print('activated_neurons_comp_windows: ',
