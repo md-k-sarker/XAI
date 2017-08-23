@@ -12,6 +12,9 @@ from nltk.stem.porter import *
 import numpy as np
 import numpy as np
 import tensorflow as tf
+import pandas as pd
+
+from Classical import utils as util
 
 
 ignore_words = ['?', '#', '1', '2', '3', '4',
@@ -40,6 +43,38 @@ def clean_str(string):
     string = re.sub(r"\?", " \? ", string)
     string = re.sub(r"\s{2,}", " ", string)
     return string.strip().lower()
+
+
+def load_concepts(root_folder,saved_file,use_cache=False):
+    '''
+    Load the concepts from the csv file
+    '''
+
+    
+    def load_data_from_cache(file_name):
+        with open(os.path.abspath(file_name), 'rb') as f:
+            concepts = pickle.load(f)
+            return [concepts]
+        
+    def save_data_to_cache(data, file_name):
+        with open(os.path.abspath(file_name), 'wb') as f:
+            pickle.dump(data, f)
+    
+        # If file is saved then just load the file
+    if os.path.isfile(saved_file) and use_cache:
+        concepts = load_data_from_cache(saved_file)
+    
+    
+    else:
+        # io_name = 'file://'+root_folder+'concepts_baseball.xlsx'
+        io_name= os.path.join(root_folder,'concepts_baseball.xlsx')
+        concepts = pd.read_excel(io=io_name)   
+        save_data_to_cache(concepts,saved_file)
+        
+    print(concepts)    
+    return concepts 
+
+load_concepts(util.root_folder,util.saving_concepts_file,True)
 
 def load_keywords_and_labels(train_data_folder, saved_file,use_cache = False):
     """

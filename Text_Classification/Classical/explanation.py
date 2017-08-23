@@ -17,6 +17,7 @@ sys.path.append(path)
 import pickle
 import re
 import time
+from random import randint
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -70,7 +71,6 @@ print("Program started")
 ####
 # get data
 def get_data():
-    
     '''
     '''
     x_text, y, y_label = dth.load_data_and_labels(util.train_data_folder, util.saving_data_file)
@@ -128,8 +128,243 @@ X_train, X_test, y_train, y_test, X_training_keyword, \
 print('words_keywords: ', words_keywords)
 
 clf, activations_over_all_itr = classifier_2_class.train_NN(X_train, y_train, no_of_hidden_layer=5, max_iter=1, use_cache=False)
-clf_keyword , activations_over_all_itr_keyword = classifier_2_class.train_NN(X_training_keyword, y_training_keyword, \
-                                           no_of_hidden_layer=5, max_iter=1, use_cache=False, for_keyword=True)
+
+
+def match_ontology_concepts_with_no_of_neurons(neurons, concepts, random_prob=True):
+    '''
+    no. of neuron and no. of concepts should be same.
+    it will try to wrap up backwards.
+    i.e. from output layer to hidden layer
+    if hierarchy of hidden layer > hierarchy of concepts then it will 
+    only attach concepts to hidden layer closest to the output layer.
+    for the remaining layers it will copy the last (in reverse) layer concepts and assign those.
+    
+    Strategy:
+    1. With fixed probability
+    2. Copy the concepts with random probability the match with no of neurons.
+
+    
+    Parameters:
+    neurons_size: [input_layer_size,hidden_layer_1_size....output_layer_size]
+    concepts: [.....[n-1_th_hidden_layer_concepts],[n_th_hidden_layer_concepts],[output_layer_concepts]]
+    
+    Returns:
+    modified_concepts: [....[same_size_of_n-1_th_hidden_layer_nueorns],[same_size_of_n_th_hidden_layer_nueorns]]
+    '''
+    
+    diff = len(neurons) - len(concepts)
+    modified_concepts = []
+    last_layer_concepts = []  # in backward
+    
+    for index, concepts_of_layer_k in reversed(list(enumerate(concepts))):
+        last_layer_concepts = concepts_of_layer_k
+        no_of_concepts = len(concepts_of_layer_k)
+        no_of_neurons = neurons[index]
+        
+        modified_concepts_list = []
+        
+        if random_prob:
+            for i in range(0, neurons[index], 1):
+                _concept = concepts_of_layer_k[randint(0, no_of_concepts)]
+                modified_concepts_list.append(_concept)
+        
+        else:
+            no_of_times = ((no_of_neurons // no_of_concepts) + 1)
+            while no_of_times:
+                modified_concepts_list.extend(concepts_of_layer_k)
+                no_of_times -= 1
+                
+            modified_concepts_list = modified_concepts_list[0:no_of_neurons]
+            
+        modified_concepts.append(modified_concepts_list)
+        
+        
+    ''' assign last layers concepts to remaining layers'''
+    for index, neurons_of_layer_k in reversed(list(enumerate(neurons))):
+        if index > len(concepts):
+            continue
+        else:
+            no_of_concepts = len(last_layer_concepts)
+            no_of_neurons = neurons[index]
+        
+            modified_concepts_list = []
+            
+            if random_prob:
+                for i in range(0, neurons[index], 1):
+                    _concept = last_layer_concepts[randint(0, no_of_concepts)]
+                    modified_concepts_list.append(_concept)
+            
+            else:
+                no_of_times = ((no_of_neurons // no_of_concepts) + 1)
+                while no_of_times:
+                    modified_concepts_list.extend(last_layer_concepts)
+                    no_of_times -= 1
+                    
+                modified_concepts_list = modified_concepts_list[0:no_of_neurons]
+                
+            modified_concepts.append(modified_concepts_list)
+        
+        
+    # reverse the layers so it's compatible with  
+    # [....[same_size_of_n-1_th_hidden_layer_nueorns],[same_size_of_n_th_hidden_layer_nueorns]]    
+    modified_concepts = list(reversed(modified_concepts))
+    
+    return modified_concepts
+
+
+def feed_ontology_contepts(concepts, feed_option='Top_to_Bottom'):
+    '''
+    feed concepts to the neural network
+    There are different ways to feed ontology concepts
+    * Top_to_Bottom : Output layer will have Top (more general) concepts while 
+     hidden to input layer will have more specific concepts (sub class of general concepts)
+    
+    * Bottom_to_Top : Output layer will have Bottom (more specific) concepts while 
+     hidden to input layer will have more general concepts (super class of specific concepts)
+    Parameters
+    ----------
+    concepts from the ontology/background knowledge
+    concepts: [...[c1,c2,..],[c1,c2..],[c1,c2]] 
+    
+    Returns
+    ---------
+    
+    '''
+    pass
+
+
+def _activation_pattern_over_all_instance(activations):
+    '''
+    
+    Parameters:
+    ----------
+    activations: activations of the neurons for all instances.
+    --activations[layers][instances]
+    
+    Returns:
+    ---------
+    neuron_activations = list of neuron_activation for instances
+    neuron_activation[layer,index,activated_or_not,no_of_times_activated]
+    '''
+    
+    neuron_activations = []
+    
+    for layer_index, layer_i_activations in enumerate(activations[1, len(activations) - 1]):
+        no_of_times_activated = 0
+        for instance_index, instance_j_activations in enumerate(layer_i_activations):
+            # instance_j_activations contains the activation of neurons for a \
+            # particular instance for a layer
+            activation_mean_value = np.mean(instance_j_activations, axis=0)
+#             activated_neurons = [1 if value >= activation_mean_value else 0 for value in instance_j_activations ]
+            
+            for neuron_index, neuron_value in enumerate(instance_j_activations):
+                activated = 0
+                if neuron_value > activation_mean_value:
+                    no_of_times_activated += 1
+                    activated = 1
+                neuron_activation = [layer_index + 1, neuron_index, activated, no_of_times_activated]
+                neuron_activations.append(neuron_activation)
+                
+            # make it a pattern if activated_neuron
+            
+            
+    return neuron_activations
+
+
+def _activation_pattern_for_a_single_instance(activations, instance_data=None):
+    '''
+    
+    Parameters:
+    ----------
+    activations: activations of the neurons for all instances.
+    --activations[layers][instances]
+    
+    Returns:
+    ---------
+    neuron_activations = list of neuron_activation
+    neuron_activation[layer,index,activated_or_not,no_of_times_activated]
+    '''
+    
+    predict_proba, activated_neurons, activated_neurons_raw_sum = clf.predict_proba(
+    instance_data)
+    
+            
+    return activated_neurons
+    
+
+
+def analyze_activations(activations):
+    '''
+    analyze the activations of the DNN.
+    
+    1. find the cluster of neurons
+        1.1. Cluster over multiple layer
+        1.2. Cluster over a single layer
+        
+    2. find differentiating neurons for different class
+        2.1. for different classes how the activation pattern is changing
+    
+    Parameters
+    ----------
+    activations: activations of the neurons over all iterations for all instances.
+    --activations[iterations][layers][instances]
+    
+    '''
+    
+    # taking activation of last iteration
+    activations = activations[-1]
+    
+    '''activations for all instance'''
+    
+    
+    # for all instance only layer 1
+    activations_all_instance_layer_0 = activations[0][:]
+    print('len(activations_all_instance_layer_0): ', len(activations_all_instance_layer_0))
+    
+    # for all instance only layer 1
+    activations_all_instance_layer_1 = activations[1][:]
+    print('len(activations_all_instance_layer_1): ', len(activations_all_instance_layer_1))
+    
+    # for all instance only layer 2
+    activations_all_instance_layer_2 = activations[2][:]
+    print('len(activations_all_instance_layer_2): ', len(activations_all_instance_layer_2))
+    
+    # for all instance only layer 3
+    activations_all_instance_layer_3 = activations[3][:]
+    print('len(activations_all_instance_layer_3): ', len(activations_all_instance_layer_3))
+    
+    # for instance j=1
+    j = 1
+    activations_single_instance = []
+    for layer_i in  activations[1:6]:
+        activations_single_instance.append(layer_i[j])
+    
+    activations_single_instance = np.array(activations_single_instance)
+    print('activations_single_instance.shape: ', activations_single_instance.shape)
+    plt.imshow(activations_single_instance.T, cmap='hot', interpolation='nearest')
+    plt.show()
+    pass
+
+
+
+'''
+activations_over_all_itr[iterations][layers][instances]
+'''
+analyze_activations(activations_over_all_itr)
+
+print('activations_over_all_itr[-1]: ', len(activations_over_all_itr[-1]))
+print('activations_over_all_itr[-1][-2]: ', len(activations_over_all_itr[-1][-2]))
+print('activations_over_all_itr[-1][-2][-1]: ', len(activations_over_all_itr[-1][-2][-1]))
+print('activations_over_all_itr[-1][-1][-1]: ', (activations_over_all_itr[-1][-1]))
+
+activations_over_all_itr_as_np = np.array(activations_over_all_itr[-1][-2])
+print('activations_over_all_itr_as_np.shape: ', activations_over_all_itr_as_np.shape)
+# plt.imshow(activations_over_all_itr_as_np.T, cmap='hot')
+# plt.show()
+
+
+# clf_keyword , activations_over_all_itr_keyword = classifier_2_class.train_NN(X_training_keyword, y_training_keyword, \
+#                                            no_of_hidden_layer=5, max_iter=1, use_cache=False, for_keyword=True)
 
 # for index, activations in enumerate(activations_over_all_itr_keyword):
 #     for index_, activation in enumerate(activations):
@@ -139,7 +374,7 @@ clf_keyword , activations_over_all_itr_keyword = classifier_2_class.train_NN(X_t
 # visualize informations
 
 
-'''train phase:
+'''keyword train phase:
  input_keyword = X_training_keyword
  l1_keyword = from ontoloy
  l2_keyword = from ontology
@@ -156,16 +391,16 @@ clf_keyword , activations_over_all_itr_keyword = classifier_2_class.train_NN(X_t
 
 '''for explanation''' 
 l1_key = X_training_keyword
-l2_key = ['sport','entertainment'] 
-l3_key = ['intentional_process','motion','power_generation'] 
-l4_key = [ 'process','object','physical_system'] 
+l2_key = ['sport', 'entertainment'] 
+l3_key = ['intentional_process', 'motion', 'power_generation'] 
+l4_key = [ 'process', 'object', 'physical_system'] 
 l5_key = ['OWL_Thing'] 
 
 
 l1_r_key = 'OWL_Thing'
-l2_r_key = [ 'process','object','physical_system']
-l3_r_key = ['intentional_process','motion','power_generation'] 
-l4_r_key = ['sport','entertainment']  
+l2_r_key = [ 'process', 'object', 'physical_system']
+l3_r_key = ['intentional_process', 'motion', 'power_generation'] 
+l4_r_key = ['sport', 'entertainment']  
 l5_r_key = [''] 
  
  
@@ -242,7 +477,7 @@ for layer_i in range(1, 5, 1):
 #     print('\n')
     x = [layer_i ] * len(words)
     x_keyword = [layer_i] * len(words_keywords)
-    y_keyword = [i for i in range(1, len(words_keywords)+1, 1)]
+    y_keyword = [i for i in range(1, len(words_keywords) + 1, 1)]
     itr_no = 0
     bubble_size_keyword = [i * 10 for i in activations_over_all_itr_keyword[itr_no][layer_i]]
  
@@ -307,8 +542,6 @@ for layer_i in range(1, 5, 1):
     
     '''added in figure 4'''
     x_keyword_ = [i + .1 for i in x_keyword]
-    print('len(x_keyword): ', len(x_keyword))
-    print('len(y_keyword): ', len(y_keyword))
     fig4.scatter(x_keyword_, y_keyword, s=bubble_size_keyword,
                         color=color[layer_i], marker='.', label=lbl)
     
