@@ -40,6 +40,7 @@ from multilayer_perceptron_custom import MLPClassifier_Custom
 # from bokeh.plotting import figure, output_file, show
 print("Program started")
 
+color = ['green', 'black', 'olive', 'cyan', 'green', 'blue']
 
 
 # x_text, y, y_label = dth.load_data_and_labels(util.train_data_folder, util.saving_data_file)
@@ -179,6 +180,7 @@ def match_ontology_concepts_with_no_of_neurons(neurons, concepts, random_prob=Tr
     modified_concepts = []
     last_layer_concepts = []  # in backward
     
+    
     for index, concepts_of_layer_k in reversed(list(enumerate(concepts))):
         last_layer_concepts = concepts_of_layer_k
         no_of_concepts = len(concepts_of_layer_k)
@@ -204,7 +206,7 @@ def match_ontology_concepts_with_no_of_neurons(neurons, concepts, random_prob=Tr
         
     ''' assign last layers concepts to remaining layers'''
     for index, neurons_of_layer_k in reversed(list(enumerate(neurons))):
-        if index > len(concepts):
+        if index < len(concepts):
             continue
         else:
             no_of_concepts = len(last_layer_concepts)
@@ -273,6 +275,7 @@ def _activation_pattern_over_all_instance(activations):
     
     neuron_activations_dict = {}
     neuron_activations_list = []
+    neurons_activations_np = np.zeros((len(activations[0]), len(activations[0][0])))
     
     for instance_index, instance_j_activations in enumerate(activations):
         no_of_times_activated = 0
@@ -282,8 +285,8 @@ def _activation_pattern_over_all_instance(activations):
             activation_mean_value = np.mean(layer_i_activations, axis=0)
 #             activated_neurons = [1 if value >= activation_mean_value else 0 for value in instance_j_activations ]
             
-            activated = 0
             for neuron_index, neuron_value in enumerate(layer_i_activations):
+                activated = 0
                 if neuron_value > activation_mean_value:
                     activated = 1
                     # index_of_this_neuron 
@@ -299,7 +302,9 @@ def _activation_pattern_over_all_instance(activations):
                     if _key not in neuron_activations_dict:
                         neuron_activations_dict[_key] = 0
                 neuron_activation_list = [layer_index + 1, neuron_index, activated, neuron_activations_dict[_key]]        
-                      
+                neurons_activations_np[layer_index, neuron_index] = neuron_activations_dict[_key]
+                
+                neuron_activations_list.append(neuron_activation_list)      
 #                 neuron_activations[layer_index + 1] = layer_index + 1
 #                 neuron_activations[neuron_index] = neuron_index
 #                 neuron_activations['activated']
@@ -326,7 +331,7 @@ def _activation_pattern_over_all_instance(activations):
 #             # make it a pattern if activated_neuron
 #             
             
-    return neuron_activations_dict , neuron_activation_list
+    return neuron_activations_dict , neuron_activations_list , neurons_activations_np
 
 
 def _activation_pattern_for_a_single_instance(clf, activations, instance_data=None):
@@ -348,7 +353,59 @@ def _activation_pattern_for_a_single_instance(clf, activations, instance_data=No
     
             
     return activated_neurons
+
+def plot_figure(patterns_baseball, concepts_baseball, patterns_computer, concepts_computer):
+    '''plot figures
+    Parameters:
+    ----------
+    patterns: 2 dimentional numpy array
+        layer * neurons_in_layer
     
+    Returns:
+    -------
+    
+    '''
+    figure = plt.figure()
+    ax = figure.add_subplot(111)
+    
+    '''for baseball'''
+    x = np.zeros(patterns_baseball.shape[0] * patterns_baseball.shape[1])
+    y = np.zeros(patterns_baseball.shape[0] * patterns_baseball.shape[1])
+    s = np.zeros(patterns_baseball.shape[0] * patterns_baseball.shape[1])
+    s_scale = 10
+    x_scale = 25
+    min_activation = 7
+    
+    
+    for i, layer_l in enumerate(patterns_baseball):
+        for j, neuron_n in enumerate(layer_l):
+            x[i * patterns_baseball.shape[1] + j] = (i + 1) / x_scale
+            y[i * patterns_baseball.shape[1] + j] = j + 1
+            s[i * patterns_baseball.shape[1] + j] = neuron_n * s_scale
+    ax.scatter(x, y, s=s, color=color[0])
+    
+    for _x, _y, _s, _c in zip(x, y, s, concepts_baseball.flatten()):
+        if _s > min_activation:
+            ax.annotate(_c, xy=(_x, _y), textcoords='data')
+    
+    '''for computer'''
+    x = np.zeros(patterns_computer.shape[0] * patterns_computer.shape[1])
+    y = np.zeros(patterns_computer.shape[0] * patterns_computer.shape[1])
+    s = np.zeros(patterns_computer.shape[0] * patterns_computer.shape[1])
+    
+    for i, layer_l in enumerate(patterns_computer):
+        for j, neuron_n in enumerate(layer_l):
+            x[i * patterns_computer.shape[1] + j] = (i + 1 + .5) / x_scale
+            y[i * patterns_computer.shape[1] + j] = j + 1
+            s[i * patterns_computer.shape[1] + j] = neuron_n * s_scale
+    ax.scatter(x, y, s=s, color=color[1])
+
+    for _x, _y, _s, _c in zip(x, y, s, concepts_computer.flatten()):
+        if _s > min_activation:
+            ax.annotate(_c, xy=(_x, _y), textcoords='data')
+    
+    plt.show()
+
 
 def analyze_activations(clf, activations, X_train, y_train, concepts_baseball, concepts_computer):
     '''
@@ -412,18 +469,35 @@ def analyze_activations(clf, activations, X_train, y_train, concepts_baseball, c
 #     print('activations_for_baseball[-1][-2][-1]: ', len(activations_for_baseball[-1][-2][-1]))
 #     print('activations_for_baseball[-1][-1][-1]: ', (activations_for_baseball[-1][-1]))
     
-    pattern_baseball = _activation_pattern_over_all_instance(activations_for_baseball)
-    pattern_computer = _activation_pattern_over_all_instance(activations_for_computer)
-    pattern_baseball_np = np.array(pattern_baseball)
-    pattern_computer_np = np.array(pattern_computer)
+    pattern_baseball_dict, pattern_baseball_list , pattern_baseball_np_array = _activation_pattern_over_all_instance(activations_for_baseball)
+    pattern_computer_dict, pattern_computer_list, pattern_computer_np_array = _activation_pattern_over_all_instance(activations_for_computer)
+    pattern_baseball_np = np.array(pattern_baseball_list)
+    pattern_computer_np = np.array(pattern_computer_list)
     
-    print('len(pattern_baseball): ', len(pattern_baseball), pattern_baseball)
-    print('len(pattern_computer): ', len(pattern_computer), pattern_computer)
-#     pattern_baseball_np_activated = pattern_baseball_np[pattern_baseball_np[:,2]==1]
-#     pattern_computer_np_activated = pattern_computer_np[pattern_computer_np[:,2]==1]
-#     
-#     print('pattern_baseball_np_activated: \n',pattern_baseball_np_activated)
-#     print('pattern_computer_np_activated: \n',pattern_computer_np_activated)
+    # plot figure
+    plot_figure(pattern_baseball_np_array, np.array(concepts_baseball), pattern_computer_np_array, np.array(concepts_computer))
+
+    
+    print('\n\n\n')
+    print('pattern_baseball_np_array: ', pattern_baseball_np_array.shape)
+    print('concepts_baseball: ', np.array(concepts_baseball).shape)
+    print('\n\n\n')
+    
+    baseball_concept_set = set()
+    computer_concept_set = set()
+    
+    
+    
+    
+    
+#     print('pattern_computer_list: ', pattern_computer_list)
+#     print('pattern_computer_np: ', pattern_computer_np)
+#     print('concepts_baseball: \n', concepts_baseball)
+#     pattern_baseball_np_activated = pattern_baseball_np[pattern_baseball_np[:, 3] > 4]
+#     pattern_computer_np_activated = pattern_computer_np[pattern_computer_np[:, 3] > 4]
+# #     
+#     print('pattern_baseball_np_activated: \n', pattern_baseball_np_activated)
+#     print('pattern_computer_np_activated: \n', pattern_computer_np_activated)
     # for all instance only layer 1
     activations_all_instance_layer_0 = activations[0][:]
     # print('len(activations_all_instance_layer_0): ', len(activations_all_instance_layer_0))
@@ -605,7 +679,7 @@ fig4.set_title('both classes weighted activation')
 fig_keyword = plt.figure(5).add_subplot(111)
 fig_keyword.set_title('both classes weighted activation for keywords') 
  
-color = ['green', 'black', 'olive', 'cyan', 'green', 'blue']
+
 
 
  
