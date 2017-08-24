@@ -139,7 +139,7 @@ def convert_training_documents_to_vector(documents, classes, words, use_cache=Fa
     print("convert_training_documents_to_vector finished.")
     return training, output
 
-def train_NN(X_training, y_training, no_of_hidden_layer, max_iter, use_cache=False, for_keyword=False):
+def train_NN(X_training, y_training, hidden_layer_sizes, max_iter, use_cache=False, for_keyword=False):
     start_time = time.time()
     print('train_NN started...')
     if  use_cache:
@@ -156,9 +156,7 @@ def train_NN(X_training, y_training, no_of_hidden_layer, max_iter, use_cache=Fal
     else:
         print('mlp initilizing started')
         no_of_hidden_neurons = ((len(X_training[0])))
-        hidden_layer_sizes = ()
-        for i in range(no_of_hidden_layer):
-            hidden_layer_sizes += (no_of_hidden_neurons,)
+
 
         mlp = MLPClassifier_Custom(hidden_layer_sizes=hidden_layer_sizes,
                             solver='adam', activation='relu',

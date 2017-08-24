@@ -68,7 +68,29 @@ print("Program started")
 # print('y_training.shape: ', y_training.shape)
 
 
-####
+def preprocess_concepts(concepts):
+    '''Convert panda dataframe concepts to list of concepts
+    
+    Parameters:
+    ----------
+    concepts: panda dataframe
+        Example: [['TeamSport' 'Racing' 'OlympicGames' 'Golf']
+             ['Sport' 0 0 0]
+             ['Game' 'Smoking' 'SocialParty' 'Vacationing']
+             ['RecreationOrExercise' 'Repairing' 'Maintaining' 'SocialInteraction']]
+    Returns:
+    -------
+    concepts: concepts: [.....[n-1_th_hidden_layer_concepts],[n_th_hidden_layer_concepts],[output_layer_concepts]]         
+    '''
+    concepts = concepts.fillna(0).values
+    concepts_as_list = []
+    
+    for i in range(concepts.shape[0]):
+        concepts_as_list.append(concepts[i, :])
+        
+    return concepts_as_list
+
+
 # get data
 def get_data():
     '''
@@ -117,19 +139,20 @@ def get_data():
     X_test, y_test = classifier_2_class.load_test_documents(util.test_file_dir, words)
     '''
     '''
+    
+    ''' concepts_baseball, concepts_computer are panda dataframe''' 
+    concepts_baseball = dth.load_concepts(util.concepts_file_baseball, None, use_cache=False)
+    concepts_computer = dth.load_concepts(util.concepts_file_computer, None, use_cache=False)
+    
+    concepts_baseball = preprocess_concepts(concepts_baseball)
+    concepts_computer = preprocess_concepts(concepts_computer)
+    
+    
     return X_training, X_test, y_training, y_test , X_training_keyword, \
-        y_training_keyword, words, words_keywords
-
-# test and train data        
-X_train, X_test, y_train, y_test, X_training_keyword, \
-    y_training_keyword, words, words_keywords = get_data()
-
-# print('y_training_keyword: ', y_training_keyword)
-print('words_keywords: ', words_keywords)
-
-clf, activations_over_all_itr = classifier_2_class.train_NN(X_train, y_train, no_of_hidden_layer=5, max_iter=1, use_cache=False)
+        y_training_keyword, words, words_keywords, concepts_baseball, concepts_computer
 
 
+    
 def match_ontology_concepts_with_no_of_neurons(neurons, concepts, random_prob=True):
     '''
     no. of neuron and no. of concepts should be same.
@@ -165,7 +188,7 @@ def match_ontology_concepts_with_no_of_neurons(neurons, concepts, random_prob=Tr
         
         if random_prob:
             for i in range(0, neurons[index], 1):
-                _concept = concepts_of_layer_k[randint(0, no_of_concepts)]
+                _concept = concepts_of_layer_k[randint(0, no_of_concepts - 1)]
                 modified_concepts_list.append(_concept)
         
         else:
@@ -191,7 +214,7 @@ def match_ontology_concepts_with_no_of_neurons(neurons, concepts, random_prob=Tr
             
             if random_prob:
                 for i in range(0, neurons[index], 1):
-                    _concept = last_layer_concepts[randint(0, no_of_concepts)]
+                    _concept = last_layer_concepts[randint(0, no_of_concepts - 1)]
                     modified_concepts_list.append(_concept)
             
             else:
@@ -235,7 +258,7 @@ def feed_ontology_contepts(concepts, feed_option='Top_to_Bottom'):
 
 def _activation_pattern_over_all_instance(activations):
     '''
-    
+    Find the activation pattern over all instance
     Parameters:
     ----------
     activations: activations of the neurons for all instances.
@@ -270,8 +293,7 @@ def _activation_pattern_over_all_instance(activations):
             
     return neuron_activations
 
-
-def _activation_pattern_for_a_single_instance(activations, instance_data=None):
+def _activation_pattern_for_a_single_instance(clf, activations, instance_data=None):
     '''
     
     Parameters:
@@ -292,8 +314,7 @@ def _activation_pattern_for_a_single_instance(activations, instance_data=None):
     return activated_neurons
     
 
-
-def analyze_activations(activations):
+def analyze_activations(clf, activations, X_train, y_train, concepts_baseball, concepts_computer):
     '''
     analyze the activations of the DNN.
     
@@ -309,12 +330,19 @@ def analyze_activations(activations):
     activations: activations of the neurons over all iterations for all instances.
     --activations[iterations][layers][instances]
     
+    concepts: concepts as ndarray. concepts dimension must match with activation dimention
+    
+    Returns
+    --------
+    Return the activated keywords
     '''
     
     # taking activation of last iteration
+    # activations for all instance after training
     activations = activations[-1]
     
-    '''activations for all instance'''
+    activations_for_baseball = []
+    activations_for_computer = []
     
     
     # for all instance only layer 1
@@ -343,14 +371,58 @@ def analyze_activations(activations):
     print('activations_single_instance.shape: ', activations_single_instance.shape)
     plt.imshow(activations_single_instance.T, cmap='hot', interpolation='nearest')
     plt.show()
-    pass
 
 
+def get_hidden_neurons_sizes(X_train, no_of_hidden_layer):
+    no_of_hidden_neurons = ((len(X_train[0])))
+    hidden_layer_sizes = ()
+    for i in range(no_of_hidden_layer):
+        hidden_layer_sizes += (no_of_hidden_neurons,)
+    return hidden_layer_sizes
+    
 
 '''
 activations_over_all_itr[iterations][layers][instances]
 '''
-analyze_activations(activations_over_all_itr)
+
+def train_network(X_train, y_train, hidden_layer_sizes, max_iter=1, use_cache=False):
+    '''Train the DNN
+    Parameters:
+    ----------
+    X_train, y_train, hidden_layer_sizes=hidden_layer_sizes, max_iter=max_iter, use_cache=False
+    
+    Returns:
+    --------
+    clf, activations_over_all_itr
+    '''
+    clf, activations_over_all_itr = classifier_2_class.train_NN(X_train, y_train, hidden_layer_sizes=hidden_layer_sizes, max_iter=max_iter, use_cache=False)
+    
+    return clf, activations_over_all_itr
+    
+    
+# Get train and test data
+# Get Concepts        
+X_train, X_test, y_train, y_test, X_training_keyword, \
+    y_training_keyword, words, words_keywords, concepts_baseball, concepts_computer = get_data()
+
+# print('y_training_keyword: ', y_training_keyword)
+# print('concepts_baseball: \n', concepts_baseball, '\n\nconcepts_computer:\n' , concepts_computer)
+
+
+# Parameters
+no_of_hidden_layer = 5
+hidden_layer_sizes = get_hidden_neurons_sizes(X_train, no_of_hidden_layer=no_of_hidden_layer)
+max_iter = 5
+
+concepts_baseball = match_ontology_concepts_with_no_of_neurons(list(hidden_layer_sizes), concepts_baseball)
+concepts_computer = match_ontology_concepts_with_no_of_neurons(list(hidden_layer_sizes), concepts_computer)
+# print('concepts_baseball: \n', concepts_baseball, '\n\nconcepts_computer:\n' , concepts_computer)
+
+# train the network
+clf, activations_over_all_itr = train_network(X_train, y_train, hidden_layer_sizes=hidden_layer_sizes, max_iter=max_iter, use_cache=False)
+# analyze the activations
+analyze_activations(clf, activations_over_all_itr, X_train, y_train, concepts_baseball, concepts_computer)
+
 
 print('activations_over_all_itr[-1]: ', len(activations_over_all_itr[-1]))
 print('activations_over_all_itr[-1][-2]: ', len(activations_over_all_itr[-1][-2]))
