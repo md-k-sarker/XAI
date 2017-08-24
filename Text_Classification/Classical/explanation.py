@@ -262,36 +262,72 @@ def _activation_pattern_over_all_instance(activations):
     Parameters:
     ----------
     activations: activations of the neurons for all instances.
-    --activations[layers][instances]
+    --activations[instances][layers]
     
     Returns:
     ---------
     neuron_activations = list of neuron_activation for instances
     neuron_activation[layer,index,activated_or_not,no_of_times_activated]
+    neuron_activations_dict{1_0: n_times,..}
     '''
     
-    neuron_activations = []
+    neuron_activations_dict = {}
+    neuron_activations_list = []
     
-    for layer_index, layer_i_activations in enumerate(activations[1, len(activations) - 1]):
+    for instance_index, instance_j_activations in enumerate(activations):
         no_of_times_activated = 0
-        for instance_index, instance_j_activations in enumerate(layer_i_activations):
+        for layer_index, layer_i_activations in enumerate(instance_j_activations):
             # instance_j_activations contains the activation of neurons for a \
             # particular instance for a layer
-            activation_mean_value = np.mean(instance_j_activations, axis=0)
+            activation_mean_value = np.mean(layer_i_activations, axis=0)
 #             activated_neurons = [1 if value >= activation_mean_value else 0 for value in instance_j_activations ]
             
-            for neuron_index, neuron_value in enumerate(instance_j_activations):
-                activated = 0
+            activated = 0
+            for neuron_index, neuron_value in enumerate(layer_i_activations):
                 if neuron_value > activation_mean_value:
-                    no_of_times_activated += 1
                     activated = 1
-                neuron_activation = [layer_index + 1, neuron_index, activated, no_of_times_activated]
-                neuron_activations.append(neuron_activation)
+                    # index_of_this_neuron 
+                    # no_of_times_activated = neuron_activations.index([layer_index + 1,neuron_index,activated,no_of_times_activated]) 1
                 
-            # make it a pattern if activated_neuron
+                    _key = str(layer_index + 1) + '_' + str(neuron_index)
+                    if _key in neuron_activations_dict:
+                        neuron_activations_dict[_key] = neuron_activations_dict[_key] + 1  
+                    else:
+                        neuron_activations_dict[_key] = 1
+                else:
+                    _key = str(layer_index + 1) + '_' + str(neuron_index)
+                    if _key not in neuron_activations_dict:
+                        neuron_activations_dict[_key] = 0
+                neuron_activation_list = [layer_index + 1, neuron_index, activated, neuron_activations_dict[_key]]        
+                      
+#                 neuron_activations[layer_index + 1] = layer_index + 1
+#                 neuron_activations[neuron_index] = neuron_index
+#                 neuron_activations['activated']
+#                 , neuron_index, activated, no_of_times_activated]
+                # neuron_activations.append(neuron_activation)
+                
+    
+#     for layer_index, layer_i_activations in enumerate(activations):
+#         no_of_times_activated = 0
+#         for instance_index, instance_j_activations in enumerate(layer_i_activations):
+#             # instance_j_activations contains the activation of neurons for a \
+#             # particular instance for a layer
+#             activation_mean_value = 0 #np.mean(instance_j_activations, axis=0)
+# #             activated_neurons = [1 if value >= activation_mean_value else 0 for value in instance_j_activations ]
+#             
+#             activated = 0
+#             for neuron_index, neuron_value in enumerate(instance_j_activations):
+#                 if neuron_value > activation_mean_value:
+#                     no_of_times_activated += 1
+#                     activated = 1
+#                 neuron_activation = [layer_index + 1, neuron_index, activated, no_of_times_activated]
+#                 neuron_activations.append(neuron_activation)
+#                 
+#             # make it a pattern if activated_neuron
+#             
             
-            
-    return neuron_activations
+    return neuron_activations_dict , neuron_activation_list
+
 
 def _activation_pattern_for_a_single_instance(clf, activations, instance_data=None):
     '''
@@ -341,25 +377,68 @@ def analyze_activations(clf, activations, X_train, y_train, concepts_baseball, c
     # activations for all instance after training
     activations = activations[-1]
     
+    X_baseball = []
+    X_computer = []
+    for y, X in zip(y_train, X_train):
+        if y[0] == 0:
+            X_baseball.append(X)
+        else:
+            X_computer.append(X)
+    
+    '''activation_all_instance will be
+    activation_all_instance[instances][layers]
+    '''
+    activation_all_instance = []
+    for i in range(len(X_train)):
+        activations_single_instance = []
+        for layer_i in  activations[1:6]:
+            activations_single_instance.append(layer_i[i])
+        activation_all_instance.append(activations_single_instance)
+    
+    print('X_train.shape: ', X_train.shape)
+    print('activation_all_instance.len: ', len(activation_all_instance))
+    
+    # clf.predict_proba()
     activations_for_baseball = []
     activations_for_computer = []
+    for y, activs_ in zip(y_train, activation_all_instance):
+        if(y[0] == 0):
+            activations_for_baseball.append(activs_)
+        else:
+            activations_for_computer.append(activs_)
     
+#     print('activations_for_baseball[-1]: ', len(activations_for_baseball[-1]))
+#     print('activations_for_baseball[-1][-2]: ', len(activations_for_baseball[-1][-2]))
+#     print('activations_for_baseball[-1][-2][-1]: ', len(activations_for_baseball[-1][-2][-1]))
+#     print('activations_for_baseball[-1][-1][-1]: ', (activations_for_baseball[-1][-1]))
     
+    pattern_baseball = _activation_pattern_over_all_instance(activations_for_baseball)
+    pattern_computer = _activation_pattern_over_all_instance(activations_for_computer)
+    pattern_baseball_np = np.array(pattern_baseball)
+    pattern_computer_np = np.array(pattern_computer)
+    
+    print('len(pattern_baseball): ', len(pattern_baseball), pattern_baseball)
+    print('len(pattern_computer): ', len(pattern_computer), pattern_computer)
+#     pattern_baseball_np_activated = pattern_baseball_np[pattern_baseball_np[:,2]==1]
+#     pattern_computer_np_activated = pattern_computer_np[pattern_computer_np[:,2]==1]
+#     
+#     print('pattern_baseball_np_activated: \n',pattern_baseball_np_activated)
+#     print('pattern_computer_np_activated: \n',pattern_computer_np_activated)
     # for all instance only layer 1
     activations_all_instance_layer_0 = activations[0][:]
-    print('len(activations_all_instance_layer_0): ', len(activations_all_instance_layer_0))
+    # print('len(activations_all_instance_layer_0): ', len(activations_all_instance_layer_0))
     
     # for all instance only layer 1
     activations_all_instance_layer_1 = activations[1][:]
-    print('len(activations_all_instance_layer_1): ', len(activations_all_instance_layer_1))
+    # print('len(activations_all_instance_layer_1): ', len(activations_all_instance_layer_1))
     
     # for all instance only layer 2
     activations_all_instance_layer_2 = activations[2][:]
-    print('len(activations_all_instance_layer_2): ', len(activations_all_instance_layer_2))
+    # print('len(activations_all_instance_layer_2): ', len(activations_all_instance_layer_2))
     
     # for all instance only layer 3
     activations_all_instance_layer_3 = activations[3][:]
-    print('len(activations_all_instance_layer_3): ', len(activations_all_instance_layer_3))
+    # print('len(activations_all_instance_layer_3): ', len(activations_all_instance_layer_3))
     
     # for instance j=1
     j = 1
@@ -368,7 +447,7 @@ def analyze_activations(clf, activations, X_train, y_train, concepts_baseball, c
         activations_single_instance.append(layer_i[j])
     
     activations_single_instance = np.array(activations_single_instance)
-    print('activations_single_instance.shape: ', activations_single_instance.shape)
+    # print('activations_single_instance.shape: ', activations_single_instance.shape)
     plt.imshow(activations_single_instance.T, cmap='hot', interpolation='nearest')
     plt.show()
 
@@ -412,7 +491,7 @@ X_train, X_test, y_train, y_test, X_training_keyword, \
 # Parameters
 no_of_hidden_layer = 5
 hidden_layer_sizes = get_hidden_neurons_sizes(X_train, no_of_hidden_layer=no_of_hidden_layer)
-max_iter = 5
+max_iter = 2
 
 concepts_baseball = match_ontology_concepts_with_no_of_neurons(list(hidden_layer_sizes), concepts_baseball)
 concepts_computer = match_ontology_concepts_with_no_of_neurons(list(hidden_layer_sizes), concepts_computer)
@@ -424,13 +503,13 @@ clf, activations_over_all_itr = train_network(X_train, y_train, hidden_layer_siz
 analyze_activations(clf, activations_over_all_itr, X_train, y_train, concepts_baseball, concepts_computer)
 
 
-print('activations_over_all_itr[-1]: ', len(activations_over_all_itr[-1]))
-print('activations_over_all_itr[-1][-2]: ', len(activations_over_all_itr[-1][-2]))
-print('activations_over_all_itr[-1][-2][-1]: ', len(activations_over_all_itr[-1][-2][-1]))
-print('activations_over_all_itr[-1][-1][-1]: ', (activations_over_all_itr[-1][-1]))
+# print('activations_over_all_itr[-1]: ', len(activations_over_all_itr[-1]))
+# print('activations_over_all_itr[-1][-2]: ', len(activations_over_all_itr[-1][-2]))
+# print('activations_over_all_itr[-1][-2][-1]: ', len(activations_over_all_itr[-1][-2][-1]))
+# print('activations_over_all_itr[-1][-1][-1]: ', (activations_over_all_itr[-1][-1]))
 
-activations_over_all_itr_as_np = np.array(activations_over_all_itr[-1][-2])
-print('activations_over_all_itr_as_np.shape: ', activations_over_all_itr_as_np.shape)
+# activations_over_all_itr_as_np = np.array(activations_over_all_itr[-1][-2])
+# print('activations_over_all_itr_as_np.shape: ', activations_over_all_itr_as_np.shape)
 # plt.imshow(activations_over_all_itr_as_np.T, cmap='hot')
 # plt.show()
 
