@@ -13,8 +13,8 @@ saving_bag_of_words_data_file = '../../data/20news-18828/2_class/model/texts_as_
 saving_classifier_model_file = '../../data/20news-18828/2_class/model/classifier_model.pkl'
 saving_classifier_model_keyword_file = '../../data/20news-18828/2_class/model/keyword_model.pkl'
 
-concepts_file_baseball = '../../data/20news-18828/2_class/concepts_baseball.xlsx'
-concepts_file_computer = '../../data/20news-18828/2_class/concepts_computer.xlsx'
+concepts_file_baseball = '../../data/20news-18828/2_class/concepts_baseball_.xlsx'
+concepts_file_computer = '../../data/20news-18828/2_class/concepts_computer_.xlsx'
 
 
 saving_classifier_logs = '../../data/20news-18828/2_class/model/log/'

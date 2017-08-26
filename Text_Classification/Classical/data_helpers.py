@@ -55,13 +55,23 @@ def load_concepts(file_name,saved_file,use_cache=False):
     concepts = pd.read_excel(io=file_name)   
     #save_data_to_cache(concepts,saved_file)
     
-    #concepts = concepts.drop('layer_no',axis=1).fillna(0)
+    #concepts = concepts.drop([0],axis=1)
     #print(type(concepts.fillna(0).values), ': ',concepts.fillna(0).values)  
     
-    concepts = concepts.drop('layer_no',axis=1)
-    concepts = concepts.fillna(0)
- 
-    return concepts.fillna(0) 
+    #concepts = concepts.drop(concepts.index[0]) #.drop(concepts.index[[0]])
+#     print(concepts.shape)
+#     print(concepts)
+#     print(concepts.index[0])
+    #concepts = concepts.iloc[1:,1:]
+    '''
+    for i in range(0,concepts.shape[1],1):
+        #print(type(concepts.iloc[:,i]))
+        if i>0:
+            concepts.iloc[:,i] = concepts.iloc[:,i].fillna(concepts.iloc[:,i-1])
+        #print(concepts.iloc[:,i])
+    '''
+    #print('concepts: ',concepts)
+    return concepts
 
 load_concepts(util.concepts_file_baseball,'',False)
 
