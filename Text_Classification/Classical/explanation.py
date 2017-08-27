@@ -43,32 +43,6 @@ print("Program started")
 color = ['green', 'purple', 'black', 'cyan', 'green', 'blue']
 
 
-# x_text, y, y_label = dth.load_data_and_labels(util.train_data_folder, util.saving_data_file)
-# words = classifier_2_class.make_word_embeddings(x_text, y, y_label)
-# 
-# documents, classes = classifier_2_class.create_document_and_classes_from_data(x_text, y, y_label)
-# 
-# '''documents is tuple
-# documents = (text,label)
-# classes is list of classes.
-# classes = [0,0,0....1,1,1,]'''
-# 
-# # remove duplicates
-# classes = list(set(classes))
-# 
-# # print(len(documents), " documents")
-# # print(len(classes), " classes", classes)
-# # print(len(words), " unique stemmed words")
-# 
-# # training data
-# training, output = classifier_2_class.convert_training_documents_to_vector(documents, classes,words)
-# X_training = np.array(training)
-# y_training = np.array(output)
-# 
-# print('X_training.shape: ', X_training.shape)
-# print('y_training.shape: ', y_training.shape)
-
-
 def preprocess_concepts(concepts):
     '''Convert panda dataframe concepts to list of concepts
     
@@ -92,11 +66,17 @@ def preprocess_concepts(concepts):
     return concepts_as_list
 
 
+
 # get data
 def get_data():
     '''
+    DataSet
+    Computer is class 0 = [1 0]
+    Baseball is class 1 = [0 1]
+    Actually this is not always true. It depends on how order of file appears to python. It may not be in sorted order. 
     '''
     x_text, y, y_label = dth.load_data_and_labels(util.train_data_folder, util.saving_data_file)
+        
     x_keyword, y_keyword, y_label_keyword = dth.load_keywords_and_labels(util.train_data_folder, util.saving_data_file, use_cache=False)
 #     print('len(x_keyword), type(x_keyword): ',len(x_keyword),type(x_keyword))
     
@@ -148,6 +128,14 @@ def get_data():
     concepts_baseball = preprocess_concepts(concepts_baseball)
     concepts_computer = preprocess_concepts(concepts_computer)
     
+    print('#######################')
+    print('X_training[5][:20]: ',X_training[5][:20])
+    print('y_training[5]: ',y_training[5])
+    print('y_label[5]: ',y_label[5])
+    print('X_training[20][:20]: ',X_training[15][:20])
+    print('y_training[20]: ',y_training[15])
+    print('y_label[20]: ',y_label[15])
+    print('#######################')
     
     return X_training, X_test, y_training, y_test , X_training_keyword, \
         y_training_keyword, words, words_keywords, concepts_baseball, concepts_computer
@@ -304,32 +292,7 @@ def _activation_pattern_over_all_instance(activations):
                 neuron_activation_list = [layer_index + 1, neuron_index, activated, neuron_activations_dict[_key]]        
                 neurons_activations_np[layer_index, neuron_index] = neuron_activations_dict[_key]
                 
-                neuron_activations_list.append(neuron_activation_list)      
-#                 neuron_activations[layer_index + 1] = layer_index + 1
-#                 neuron_activations[neuron_index] = neuron_index
-#                 neuron_activations['activated']
-#                 , neuron_index, activated, no_of_times_activated]
-                # neuron_activations.append(neuron_activation)
-                
-    
-#     for layer_index, layer_i_activations in enumerate(activations):
-#         no_of_times_activated = 0
-#         for instance_index, instance_j_activations in enumerate(layer_i_activations):
-#             # instance_j_activations contains the activation of neurons for a \
-#             # particular instance for a layer
-#             activation_mean_value = 0 #np.mean(instance_j_activations, axis=0)
-# #             activated_neurons = [1 if value >= activation_mean_value else 0 for value in instance_j_activations ]
-#             
-#             activated = 0
-#             for neuron_index, neuron_value in enumerate(instance_j_activations):
-#                 if neuron_value > activation_mean_value:
-#                     no_of_times_activated += 1
-#                     activated = 1
-#                 neuron_activation = [layer_index + 1, neuron_index, activated, no_of_times_activated]
-#                 neuron_activations.append(neuron_activation)
-#                 
-#             # make it a pattern if activated_neuron
-#             
+                neuron_activations_list.append(neuron_activation_list) 
             
     return neuron_activations_dict , neuron_activations_list , neurons_activations_np
 
@@ -354,7 +317,7 @@ def _activation_pattern_for_a_single_instance(clf, activations, instance_data=No
             
     return activated_neurons
 
-def plot_figure(patterns_all,patterns_baseball, concepts_baseball, patterns_computer, concepts_computer):
+def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_computer, concepts_computer):
     '''plot figures
     Parameters:
     ----------
@@ -385,9 +348,9 @@ def plot_figure(patterns_all,patterns_baseball, concepts_baseball, patterns_comp
             y[i * patterns_all.shape[1] + j] = j + 1
             s[i * patterns_all.shape[1] + j] = neuron_n * s_scale
             x_tick[i * patterns_all.shape[1] + j] = (i + 1)
-            x_tick_label[i * patterns_all.shape[1] + j] = (i+1)
+            x_tick_label[i * patterns_all.shape[1] + j] = (i + 1)
     ax_all.scatter(x, y, s=s, color=color[0])
-    ax_all.set_xticklabels([0,1,1.5,2,2.5,3,3.5,4,4.5,5])
+    ax_all.set_xticklabels([0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5])
     
     '''for baseball'''
     x = np.zeros(patterns_baseball.shape[0] * patterns_baseball.shape[1])
@@ -402,14 +365,14 @@ def plot_figure(patterns_all,patterns_baseball, concepts_baseball, patterns_comp
             y[i * patterns_baseball.shape[1] + j] = j + 1
             s[i * patterns_baseball.shape[1] + j] = neuron_n * s_scale
             x_tick[i * patterns_baseball.shape[1] + j] = (i + 1)
-            x_tick_label[i * patterns_baseball.shape[1] + j] = (i+1)
+            x_tick_label[i * patterns_baseball.shape[1] + j] = (i + 1)
     ax.scatter(x, y, s=s, color=color[0])
     x_ticks = ['x' for x in range(1, 6, 1)]
-    #ax.set_xticklabels([1,2,3,4,5])
+    # ax.set_xticklabels([1,2,3,4,5])
     
     for _x, _y, _s, _c in zip(x, y, s, concepts_baseball.flatten()):
         if _s > min_activation:
-            ax.annotate(_c, xy=(_x, _y), textcoords='data',color=color[0])
+            ax.annotate(_c, xy=(_x, _y), textcoords='data', color=color[0])
     
     '''for computer'''
     x = np.zeros(patterns_computer.shape[0] * patterns_computer.shape[1])
@@ -418,21 +381,23 @@ def plot_figure(patterns_all,patterns_baseball, concepts_baseball, patterns_comp
     
     for i, layer_l in enumerate(patterns_computer):
         for j, neuron_n in enumerate(layer_l):
-            x[i * patterns_computer.shape[1] + j] = (i + 1 ) / x_scale
+            x[i * patterns_computer.shape[1] + j] = (i + 1) / x_scale
             y[i * patterns_computer.shape[1] + j] = j + 1
             s[i * patterns_computer.shape[1] + j] = neuron_n * s_scale
     ax.scatter(x, y, s=s, color=color[1])
     x_ticks = [x for x in range(1, 6, 1)]
-    #ax.set_xticks(x_ticks)
+    # ax.set_xticks(x_ticks)
 
     for _x, _y, _s, _c in zip(x, y, s, concepts_computer.flatten()):
         if _s > min_activation:
-            ax.annotate(_c, xy=(_x, _y+.2), textcoords='data',color=color[1])
+            ax.annotate(_c, xy=(_x, _y + .2), textcoords='data', color=color[1])
             
     ax.legend(['class baseball', 'class computer'], loc='upper left')
     
-    plt.show()
 
+def display_figure():
+    '''Display all the plotted figures'''
+    plt.show()
 
 def analyze_activations(clf, activations, X_train, y_train, concepts_baseball, concepts_computer):
     '''
@@ -501,55 +466,10 @@ def analyze_activations(clf, activations, X_train, y_train, concepts_baseball, c
     pattern_computer_dict, pattern_computer_list, pattern_computer_np_array = _activation_pattern_over_all_instance(activations_for_computer)
     
     # plot figure
-    plot_figure(pattern_all_np_array,pattern_baseball_np_array, np.array(concepts_baseball), pattern_computer_np_array, np.array(concepts_computer))
-
+    plot_figure(pattern_all_np_array, pattern_baseball_np_array, np.array(concepts_baseball), pattern_computer_np_array, np.array(concepts_computer))
     
-    print('\n\n\n')
-    print('pattern_baseball_np_array: ', pattern_baseball_np_array.shape)
-    print('concepts_baseball: ', np.array(concepts_baseball).shape)
-    print('\n\n\n')
+    return pattern_all_np_array, pattern_baseball_np_array, pattern_computer_np_array
     
-    baseball_concept_set = set()
-    computer_concept_set = set()
-    
-    
-    
-    
-    
-#     print('pattern_computer_list: ', pattern_computer_list)
-#     print('pattern_computer_np: ', pattern_computer_np)
-#     print('concepts_baseball: \n', concepts_baseball)
-#     pattern_baseball_np_activated = pattern_baseball_np[pattern_baseball_np[:, 3] > 4]
-#     pattern_computer_np_activated = pattern_computer_np[pattern_computer_np[:, 3] > 4]
-# #     
-#     print('pattern_baseball_np_activated: \n', pattern_baseball_np_activated)
-#     print('pattern_computer_np_activated: \n', pattern_computer_np_activated)
-    # for all instance only layer 1
-    activations_all_instance_layer_0 = activations[0][:]
-    # print('len(activations_all_instance_layer_0): ', len(activations_all_instance_layer_0))
-    
-    # for all instance only layer 1
-    activations_all_instance_layer_1 = activations[1][:]
-    # print('len(activations_all_instance_layer_1): ', len(activations_all_instance_layer_1))
-    
-    # for all instance only layer 2
-    activations_all_instance_layer_2 = activations[2][:]
-    # print('len(activations_all_instance_layer_2): ', len(activations_all_instance_layer_2))
-    
-    # for all instance only layer 3
-    activations_all_instance_layer_3 = activations[3][:]
-    # print('len(activations_all_instance_layer_3): ', len(activations_all_instance_layer_3))
-    
-    # for instance j=1
-    j = 1
-    activations_single_instance = []
-    for layer_i in  activations[1:6]:
-        activations_single_instance.append(layer_i[j])
-    
-    activations_single_instance = np.array(activations_single_instance)
-    # print('activations_single_instance.shape: ', activations_single_instance.shape)
-#     plt.imshow(activations_single_instance.T, cmap='hot', interpolation='nearest')
-#     plt.show()
 
 
 def get_hidden_neurons_sizes(X_train, no_of_hidden_layer):
@@ -564,7 +484,7 @@ def get_hidden_neurons_sizes(X_train, no_of_hidden_layer):
 activations_over_all_itr[iterations][layers][instances]
 '''
 
-def train_network(X_train, y_train, hidden_layer_sizes, max_iter=1, use_cache=False, for_keyword=None):
+def train_network(X_train, y_train, hidden_layer_sizes, max_iter=1, use_cache=False, for_keyword=None, should_save=False):
     '''Train the DNN
     Parameters:
     ----------
@@ -574,18 +494,16 @@ def train_network(X_train, y_train, hidden_layer_sizes, max_iter=1, use_cache=Fa
     --------
     clf, activations_over_all_itr
     '''
-    clf, activations_over_all_itr = classifier_2_class.train_NN(X_train, y_train, hidden_layer_sizes=hidden_layer_sizes, max_iter=max_iter, use_cache=False,for_keyword=for_keyword)
+    clf, activations_over_all_itr = classifier_2_class.train_NN(X_train, y_train, hidden_layer_sizes=hidden_layer_sizes, max_iter=max_iter, use_cache=False, for_keyword=for_keyword, should_save=False)
     
     return clf, activations_over_all_itr
     
     
 # Get train and test data
 # Get Concepts        
-X_train, X_test, y_train, y_test, X_training_keyword, \
-    y_training_keyword, words, words_keywords, concepts_baseball, concepts_computer = get_data()
 
 
-def explain_instance(classifier,instance,concepts_cls_1,concepts_cls_2):
+def explain_instance(classifier, instance, pattern_all, pattern_baseball,pattern_computer, concepts_cls_1, concepts_cls_2):
     '''
     Predict an instance and explain its decision
     Parameters:
@@ -594,278 +512,373 @@ def explain_instance(classifier,instance,concepts_cls_1,concepts_cls_2):
     Returns:
     --------
     '''
-    predict_proba, activated_neurons, activated_neurons_raw_sum = classifier.predict_prob(instance)
+    predict_proba, activated_neurons, activated_neurons_raw_sum = classifier.predict_proba(instance)
+    print('predict_proba: ',predict_proba)
+    print('len(activated_neurons): ', len(activated_neurons))
+    print('activated_neurons: ', activated_neurons)
 
 # print('y_training_keyword: ', y_training_keyword)
 # print('concepts_baseball: \n', concepts_baseball, '\n\nconcepts_computer:\n' , concepts_computer)
 
 
 # Parameters
+
+
+X_train, X_test, y_train, y_test, X_training_keyword, \
+    y_training_keyword, words, words_keywords, concepts_baseball, concepts_computer = get_data()
+
 no_of_hidden_layer = 5
 hidden_layer_sizes = get_hidden_neurons_sizes(X_train, no_of_hidden_layer=no_of_hidden_layer)
 max_iter = 1
 
+# match concept and neurons by number and layer  
 concepts_baseball = match_ontology_concepts_with_no_of_neurons(list(hidden_layer_sizes), concepts_baseball)
 concepts_computer = match_ontology_concepts_with_no_of_neurons(list(hidden_layer_sizes), concepts_computer)
-# print('concepts_baseball: \n', concepts_baseball, '\n\nconcepts_computer:\n' , concepts_computer)
 
 # train the network
 clf, activations_over_all_itr = train_network(X_train, y_train, hidden_layer_sizes=hidden_layer_sizes, max_iter=max_iter, use_cache=False)
 # analyze the activations
-analyze_activations(clf, activations_over_all_itr, X_train, y_train, concepts_baseball, concepts_computer)
+pattern_all, pattern_baseball, pattern_computer = analyze_activations(clf, activations_over_all_itr, X_train, y_train, concepts_baseball, concepts_computer)
+# explain a single instance
+explain_instance(clf, X_test[0], pattern_all, pattern_baseball, pattern_computer, concepts_baseball, concepts_computer)
+# Display figures
+# display_figure()
 
 
-# print('activations_over_all_itr[-1]: ', len(activations_over_all_itr[-1]))
-# print('activations_over_all_itr[-1][-2]: ', len(activations_over_all_itr[-1][-2]))
-# print('activations_over_all_itr[-1][-2][-1]: ', len(activations_over_all_itr[-1][-2][-1]))
-# print('activations_over_all_itr[-1][-1][-1]: ', (activations_over_all_itr[-1][-1]))
 
-# activations_over_all_itr_as_np = np.array(activations_over_all_itr[-1][-2])
-# print('activations_over_all_itr_as_np.shape: ', activations_over_all_itr_as_np.shape)
-# plt.imshow(activations_over_all_itr_as_np.T, cmap='hot')
+
+
+# # print('activations_over_all_itr[-1]: ', len(activations_over_all_itr[-1]))
+# # print('activations_over_all_itr[-1][-2]: ', len(activations_over_all_itr[-1][-2]))
+# # print('activations_over_all_itr[-1][-2][-1]: ', len(activations_over_all_itr[-1][-2][-1]))
+# # print('activations_over_all_itr[-1][-1][-1]: ', (activations_over_all_itr[-1][-1]))
+# 
+# # activations_over_all_itr_as_np = np.array(activations_over_all_itr[-1][-2])
+# # print('activations_over_all_itr_as_np.shape: ', activations_over_all_itr_as_np.shape)
+# # plt.imshow(activations_over_all_itr_as_np.T, cmap='hot')
+# # plt.show()
+# 
+# 
+# clf_keyword , activations_over_all_itr_keyword = train_network(X_training_keyword, y_training_keyword, \
+#                                            hidden_layer_sizes=hidden_layer_sizes, max_iter=max_iter, use_cache=False, for_keyword=True)
+# 
+# # for index, activations in enumerate(activations_over_all_itr_keyword):
+# #     for index_, activation in enumerate(activations):
+# #         # print('activations[%d]' % index_, activation[index_])
+# #         # pass
+#     
+# # visualize informations
+# 
+# 
+# '''keyword train phase:
+#  input_keyword = X_training_keyword
+#  l1_keyword = from ontoloy
+#  l2_keyword = from ontology
+#  l3_keyword = from ontology
+#  l4_keyword = from ontology
+#  
+#  explanation phase
+#  input_keyword = from ontology only related keywords others are 0
+#  l1_keyword = from ontoloy
+#  l2_keyword = from ontology
+#  l3_keyword = from ontology
+#  l4_keyword = from ontology
+#  mapping keywords with cluster of activation'''
+# 
+# '''for explanation''' 
+# l1_key = X_training_keyword
+# l2_key = ['sport', 'entertainment'] 
+# l3_key = ['intentional_process', 'motion', 'power_generation'] 
+# l4_key = [ 'process', 'object', 'physical_system'] 
+# l5_key = ['OWL_Thing'] 
+# 
+# 
+# l1_r_key = 'OWL_Thing'
+# l2_r_key = [ 'process', 'object', 'physical_system']
+# l3_r_key = ['intentional_process', 'motion', 'power_generation'] 
+# l4_r_key = ['sport', 'entertainment']  
+# l5_r_key = [''] 
+#  
+#  
+# print('predicting started...')
+# '''see difference in activated neurons for each class'''
+# '''class_names: dict'''
+# X_test_comp_windows = X_test[:2]
+# X_rec_sport_hockey = X_test[2:4]
+#  
+#  
+# predict_proba, activated_neurons_comp_windows, activated_neurons_raw_sum_comp_windows = clf.predict_proba(
+#     X_test_comp_windows)
+# predict_proba, activated_neurons_sport_hockey, activated_neurons_raw_sum_sport_hockey = clf.predict_proba(
+#     X_rec_sport_hockey)
+#  
+#  
+# predict_proba_all, activated_neurons_all, activated_neurons_raw_sum_all = clf.predict_proba(
+#     X_test)
+# print('len(X_test): ', len(X_test))
+#  
+#  
+#  
+# '''Plot for each class'''
+# # 3474
+# # output to static HTML file
+# # output_file("square.html")
+#  
+# # p1 = figure()
+# # p2 = figure()
+# # p3 = figure()
+#  
+# # fig = plt.figure()
+#  
+# # fig1 for comp.windows.x
+# fig1 = plt.figure(1).add_subplot(111)  # fig.add_subplot(1, 3, 1)
+# fig1.set_title('class comp.windows_x')
+#  
+# # fig2 for rec.sport.hockey
+# fig2 = plt.figure(2).add_subplot(111)  # fig.add_subplot(1, 3, 2)
+# fig2.set_title('class sport_hockey')
+#  
+# # fig3 for all 2 class
+# fig3 = plt.figure(3).add_subplot(111)  # fig.add_subplot(1, 3, 3)
+# fig3.set_title('both classes without weighted activation')
+#  
+# # fig4 for all 2 class with weighted activations
+# fig4 = plt.figure(4).add_subplot(111)
+# fig4.set_title('both classes weighted activation')
+# 
+# # fig5 i.e. fig_keyword for keywords
+# fig_keyword = plt.figure(5).add_subplot(111)
+# fig_keyword.set_title('both classes weighted activation for keywords') 
+#  
+# 
+# 
+# 
+#  
+# for layer_i in range(1, 5, 1):
+#     #     print('activated_neurons_comp_windows: ',
+#     #           activated_neurons_comp_windows[layer_i])
+#     #     print('activated_neurons_sport_hockey: ',
+#     #           activated_neurons_sport_hockey[layer_i])
+#  
+#     activated_for_all_class = activated_neurons_comp_windows[
+#         layer_i] & activated_neurons_sport_hockey[layer_i]
+#     # print('activated_for_all_class: ', activated_for_all_class)
+# #     print('hidden_layer %s' % (layer_i + 1))
+# #     print('activated_for_all_class: ', activated_for_all_class)
+# #     print('activated_neurons_only_for_comp_windows: ',
+# #           activated_neurons_comp_windows[
+# #               layer_i] - activated_for_all_class)
+# #     print('activated_neurons_only_for_sport_hockey',
+# #           activated_neurons_sport_hockey[layer_i] - activated_for_all_class)
+# #     print('\n')
+#     x = [layer_i ] * len(words)
+#     x_keyword = [layer_i] * len(words_keywords)
+#     y_keyword = [i for i in range(1, len(words_keywords) + 1, 1)]
+#     itr_no = 0
+#     bubble_size_keyword = [i * 10 for i in activations_over_all_itr_keyword[itr_no][layer_i]]
+#  
+#     # add a square renderer with a size, color, and alpha
+#     y_windows = [0] * len(words)
+#     y_hockey = [0] * len(words)
+#     y_raw_all = [0] * len(words)
+#     '''s_raw_all : size of the points'''
+#     s_raw_all = [0] * len(words)
+#  
+#     for index in activated_neurons_comp_windows[layer_i]:
+#         y_windows[index] = index
+#  
+#     # fig1.scatter(x, y, color=color[layer_i], marker='.')
+#     # p1.square(x, y, size=2, color="olive", alpha=0.5)
+#  
+#     for index in activated_neurons_sport_hockey[layer_i]:
+#         y_hockey[index] = index
+#     # fig2.scatter(x, y, color=color[layer_i], marker='.')
+#     # p2.square(x, y, size=2, color="olive", alpha=0.5)
+#  
+#  
+#     for index, value in enumerate(activated_neurons_raw_sum_all[layer_i]):
+#         if value > 0:
+#             y_raw_all[index] = index
+#             s_raw_all[index] = value * 50
+#         else:
+#             y_raw_all[index] = 0
+#             s_raw_all[index] = 0
+#  
+# #     print('activated_neurons_raw_sum_all[layer_i]: ',
+# #           len(y_raw_all), y_raw_all)
+#  
+#  
+# #     if layer_i == 0:
+# #         print()
+# #         print('activated_neurons_raw_sum_all[layer_i]: ',
+# #               activated_neurons_raw_sum_all[layer_i])
+# #         # print('y_raw_all: ', y_raw_all)
+# #         # print('s_raw_all: ', s_raw_all)
+# #         print()
+#     # fig3.scatter(x, y, color=color[layer_i], marker='.')
+#     # p3.square(x, y, size=2, color="olive", alpha=0.5)
+#  
+#     '''using multiple figure'''
+#     lbl = 'hidden_layer_' + str(layer_i)
+#     fig1.scatter(x, y_windows, color=color[layer_i],
+#                  marker='.', label=lbl)
+#     fig2.scatter(x, y_hockey, color=color[layer_i],
+#                  marker='.', label=lbl)
+#  
+#     '''using single figure'''
+#     fig3.scatter(np.array(x) - .05, y_windows, color=color[0],
+#                  marker='.')
+#     fig3.scatter(np.array(x) + .05 , y_hockey, color=color[1],
+#                  marker='.')
+#  
+#     '''using weighted bubble'''
+#     x_ = [i - .1 for i in x]
+#     fig4.scatter(x_, y_raw_all, s=s_raw_all, color=color[layer_i],
+#                  marker='.', label=lbl)
+#     
+#     '''added in figure 4'''
+#     x_keyword_ = [i + .1 for i in x_keyword]
+#     fig4.scatter(x_keyword_, y_keyword, s=bubble_size_keyword,
+#                         color=color[layer_i], marker='.', label=lbl)
+#     
+#     '''only keywords'''
+#     fig_keyword.scatter(x_keyword, y_keyword, s=bubble_size_keyword,
+#                         color=color[layer_i], marker='.', label=lbl)
+#  
+# # show the results
+# # show(p1)
+# # show(p2)
+# # show(p3)
+# y_ticks = [x for x in range(0, len(words))]
+# x_ticks = [x for x in range(0, 5, 1)]
+# fig1.set_xticks(x_ticks)
+# fig2.set_xticks(x_ticks)
+# fig3.set_xticks(x_ticks)
+# fig4.set_xticks(x_ticks)
+# fig_keyword.set_xticks(x_ticks)
+#  
+# # fig1.set_yticks(y_ticks)
+# # fig2.set_yticks(y_ticks)
+# # fig3.set_yticks(y_ticks)
+# # fig4.set_yticks(y_ticks)
+# # fig5.set_yticks(y_ticks)
+#  
+# fig1.set_xlabel('hidden_layers ')
+# fig2.set_xlabel('hidden_layers')
+# fig3.set_xlabel('hidden_layers')
+# fig4.set_xlabel('hidden_layers')
+# fig_keyword.set_xlabel('hidden_layers')
+#  
+# fig1.set_ylabel('n\'th neuron')
+# fig2.set_ylabel('n\'th neuron')
+# fig3.set_ylabel('n\'th neuron')
+# fig4.set_ylabel('n\'th neuron')
+# fig_keyword.set_xlabel('hidden_layers')
+#  
+# # fig4.set_label(['computer', 'guns', 'hockey', 'computer',
+# #                 'guns', 'hockey', 'computer', 'guns', 'hockey'])
+#  
+# fig1.legend(loc='upper left')
+# fig2.legend(loc='upper left')
+# fig3.legend(['class comp.windows_x', 'class baseball'], loc='upper left')
+# fig4.legend(loc='upper left')
+# fig_keyword.legend(loc='upper left')
+#  
+# '''dump to pickle'''
+# figure_file = '../../data/20news-18828/2_class/model/fig.pickle'
+#  
+# with open(figure_file, 'wb') as f:
+#     pickle.dump([fig1, fig2, fig3, fig4, fig_keyword], f)
+#  
+# '''load figure from saved data'''
+# '''after loading from pickle zooming is not working'''
+# 
+# print('figure display starts...') 
 # plt.show()
-
-
-clf_keyword , activations_over_all_itr_keyword = train_network(X_training_keyword, y_training_keyword, \
-                                           hidden_layer_sizes=hidden_layer_sizes, max_iter=max_iter, use_cache=False, for_keyword=True)
-
-# for index, activations in enumerate(activations_over_all_itr_keyword):
-#     for index_, activation in enumerate(activations):
-#         # print('activations[%d]' % index_, activation[index_])
-#         # pass
-    
-# visualize informations
-
-
-'''keyword train phase:
- input_keyword = X_training_keyword
- l1_keyword = from ontoloy
- l2_keyword = from ontology
- l3_keyword = from ontology
- l4_keyword = from ontology
- 
- explanation phase
- input_keyword = from ontology only related keywords others are 0
- l1_keyword = from ontoloy
- l2_keyword = from ontology
- l3_keyword = from ontology
- l4_keyword = from ontology
- mapping keywords with cluster of activation'''
-
-'''for explanation''' 
-l1_key = X_training_keyword
-l2_key = ['sport', 'entertainment'] 
-l3_key = ['intentional_process', 'motion', 'power_generation'] 
-l4_key = [ 'process', 'object', 'physical_system'] 
-l5_key = ['OWL_Thing'] 
-
-
-l1_r_key = 'OWL_Thing'
-l2_r_key = [ 'process', 'object', 'physical_system']
-l3_r_key = ['intentional_process', 'motion', 'power_generation'] 
-l4_r_key = ['sport', 'entertainment']  
-l5_r_key = [''] 
- 
- 
-print('predicting started...')
-'''see difference in activated neurons for each class'''
-'''class_names: dict'''
-X_test_comp_windows = X_test[:2]
-X_rec_sport_hockey = X_test[2:4]
- 
- 
-predict_proba, activated_neurons_comp_windows, activated_neurons_raw_sum_comp_windows = clf.predict_proba(
-    X_test_comp_windows)
-predict_proba, activated_neurons_sport_hockey, activated_neurons_raw_sum_sport_hockey = clf.predict_proba(
-    X_rec_sport_hockey)
- 
- 
-predict_proba_all, activated_neurons_all, activated_neurons_raw_sum_all = clf.predict_proba(
-    X_test)
-print('len(X_test): ', len(X_test))
- 
- 
- 
-'''Plot for each class'''
-# 3474
-# output to static HTML file
-# output_file("square.html")
- 
-# p1 = figure()
-# p2 = figure()
-# p3 = figure()
- 
-# fig = plt.figure()
- 
-# fig1 for comp.windows.x
-fig1 = plt.figure(1).add_subplot(111)  # fig.add_subplot(1, 3, 1)
-fig1.set_title('class comp.windows_x')
- 
-# fig2 for rec.sport.hockey
-fig2 = plt.figure(2).add_subplot(111)  # fig.add_subplot(1, 3, 2)
-fig2.set_title('class sport_hockey')
- 
-# fig3 for all 2 class
-fig3 = plt.figure(3).add_subplot(111)  # fig.add_subplot(1, 3, 3)
-fig3.set_title('both classes without weighted activation')
- 
-# fig4 for all 2 class with weighted activations
-fig4 = plt.figure(4).add_subplot(111)
-fig4.set_title('both classes weighted activation')
-
-# fig5 i.e. fig_keyword for keywords
-fig_keyword = plt.figure(5).add_subplot(111)
-fig_keyword.set_title('both classes weighted activation for keywords') 
- 
-
-
-
- 
-for layer_i in range(1, 5, 1):
-    #     print('activated_neurons_comp_windows: ',
-    #           activated_neurons_comp_windows[layer_i])
-    #     print('activated_neurons_sport_hockey: ',
-    #           activated_neurons_sport_hockey[layer_i])
- 
-    activated_for_all_class = activated_neurons_comp_windows[
-        layer_i] & activated_neurons_sport_hockey[layer_i]
-    # print('activated_for_all_class: ', activated_for_all_class)
-#     print('hidden_layer %s' % (layer_i + 1))
-#     print('activated_for_all_class: ', activated_for_all_class)
-#     print('activated_neurons_only_for_comp_windows: ',
-#           activated_neurons_comp_windows[
-#               layer_i] - activated_for_all_class)
-#     print('activated_neurons_only_for_sport_hockey',
-#           activated_neurons_sport_hockey[layer_i] - activated_for_all_class)
-#     print('\n')
-    x = [layer_i ] * len(words)
-    x_keyword = [layer_i] * len(words_keywords)
-    y_keyword = [i for i in range(1, len(words_keywords) + 1, 1)]
-    itr_no = 0
-    bubble_size_keyword = [i * 10 for i in activations_over_all_itr_keyword[itr_no][layer_i]]
- 
-    # add a square renderer with a size, color, and alpha
-    y_windows = [0] * len(words)
-    y_hockey = [0] * len(words)
-    y_raw_all = [0] * len(words)
-    '''s_raw_all : size of the points'''
-    s_raw_all = [0] * len(words)
- 
-    for index in activated_neurons_comp_windows[layer_i]:
-        y_windows[index] = index
- 
-    # fig1.scatter(x, y, color=color[layer_i], marker='.')
-    # p1.square(x, y, size=2, color="olive", alpha=0.5)
- 
-    for index in activated_neurons_sport_hockey[layer_i]:
-        y_hockey[index] = index
-    # fig2.scatter(x, y, color=color[layer_i], marker='.')
-    # p2.square(x, y, size=2, color="olive", alpha=0.5)
- 
- 
-    for index, value in enumerate(activated_neurons_raw_sum_all[layer_i]):
-        if value > 0:
-            y_raw_all[index] = index
-            s_raw_all[index] = value * 50
-        else:
-            y_raw_all[index] = 0
-            s_raw_all[index] = 0
- 
-#     print('activated_neurons_raw_sum_all[layer_i]: ',
-#           len(y_raw_all), y_raw_all)
- 
- 
-#     if layer_i == 0:
-#         print()
-#         print('activated_neurons_raw_sum_all[layer_i]: ',
-#               activated_neurons_raw_sum_all[layer_i])
-#         # print('y_raw_all: ', y_raw_all)
-#         # print('s_raw_all: ', s_raw_all)
-#         print()
-    # fig3.scatter(x, y, color=color[layer_i], marker='.')
-    # p3.square(x, y, size=2, color="olive", alpha=0.5)
- 
-    '''using multiple figure'''
-    lbl = 'hidden_layer_' + str(layer_i)
-    fig1.scatter(x, y_windows, color=color[layer_i],
-                 marker='.', label=lbl)
-    fig2.scatter(x, y_hockey, color=color[layer_i],
-                 marker='.', label=lbl)
- 
-    '''using single figure'''
-    fig3.scatter(np.array(x) - .05, y_windows, color=color[0],
-                 marker='.')
-    fig3.scatter(np.array(x) + .05 , y_hockey, color=color[1],
-                 marker='.')
- 
-    '''using weighted bubble'''
-    x_ = [i - .1 for i in x]
-    fig4.scatter(x_, y_raw_all, s=s_raw_all, color=color[layer_i],
-                 marker='.', label=lbl)
-    
-    '''added in figure 4'''
-    x_keyword_ = [i + .1 for i in x_keyword]
-    fig4.scatter(x_keyword_, y_keyword, s=bubble_size_keyword,
-                        color=color[layer_i], marker='.', label=lbl)
-    
-    '''only keywords'''
-    fig_keyword.scatter(x_keyword, y_keyword, s=bubble_size_keyword,
-                        color=color[layer_i], marker='.', label=lbl)
- 
-# show the results
-# show(p1)
-# show(p2)
-# show(p3)
-y_ticks = [x for x in range(0, len(words))]
-x_ticks = [x for x in range(0, 5, 1)]
-fig1.set_xticks(x_ticks)
-fig2.set_xticks(x_ticks)
-fig3.set_xticks(x_ticks)
-fig4.set_xticks(x_ticks)
-fig_keyword.set_xticks(x_ticks)
- 
-# fig1.set_yticks(y_ticks)
-# fig2.set_yticks(y_ticks)
-# fig3.set_yticks(y_ticks)
-# fig4.set_yticks(y_ticks)
-# fig5.set_yticks(y_ticks)
- 
-fig1.set_xlabel('hidden_layers ')
-fig2.set_xlabel('hidden_layers')
-fig3.set_xlabel('hidden_layers')
-fig4.set_xlabel('hidden_layers')
-fig_keyword.set_xlabel('hidden_layers')
- 
-fig1.set_ylabel('n\'th neuron')
-fig2.set_ylabel('n\'th neuron')
-fig3.set_ylabel('n\'th neuron')
-fig4.set_ylabel('n\'th neuron')
-fig_keyword.set_xlabel('hidden_layers')
- 
-# fig4.set_label(['computer', 'guns', 'hockey', 'computer',
-#                 'guns', 'hockey', 'computer', 'guns', 'hockey'])
- 
-fig1.legend(loc='upper left')
-fig2.legend(loc='upper left')
-fig3.legend(['class comp.windows_x', 'class baseball'], loc='upper left')
-fig4.legend(loc='upper left')
-fig_keyword.legend(loc='upper left')
- 
-'''dump to pickle'''
-figure_file = '../../data/20news-18828/2_class/model/fig.pickle'
- 
-with open(figure_file, 'wb') as f:
-    pickle.dump([fig1, fig2, fig3, fig4, fig_keyword], f)
- 
-'''load figure from saved data'''
-'''after loading from pickle zooming is not working'''
-
-print('figure display starts...') 
-plt.show()
-print('figure closed') 
+# print('figure closed') 
 # print('predict: ', clf.predict(X_test))
 # predict_proba, activated_neurons = clf.predict_proba(X_test)
 # print('predict_proba: ', predict_proba)
  
 # for i, neurons in enumerate(activated_neurons):
 #     print('layer %s: ' % (i + 1), neurons)
+
+
+
+# part of analyze_activations():
+#     print('\n\n\n')
+#     print('pattern_baseball_np_array: ', pattern_baseball_np_array.shape)
+#     print('concepts_baseball: ', np.array(concepts_baseball).shape)
+#     print('\n\n\n')
+#     
+#     baseball_concept_set = set()
+#     computer_concept_set = set()
+#     
+#     
+#     
+#     
+#     
+# #     print('pattern_computer_list: ', pattern_computer_list)
+# #     print('pattern_computer_np: ', pattern_computer_np)
+# #     print('concepts_baseball: \n', concepts_baseball)
+# #     pattern_baseball_np_activated = pattern_baseball_np[pattern_baseball_np[:, 3] > 4]
+# #     pattern_computer_np_activated = pattern_computer_np[pattern_computer_np[:, 3] > 4]
+# # #     
+# #     print('pattern_baseball_np_activated: \n', pattern_baseball_np_activated)
+# #     print('pattern_computer_np_activated: \n', pattern_computer_np_activated)
+#     # for all instance only layer 1
+#     activations_all_instance_layer_0 = activations[0][:]
+#     # print('len(activations_all_instance_layer_0): ', len(activations_all_instance_layer_0))
+#     
+#     # for all instance only layer 1
+#     activations_all_instance_layer_1 = activations[1][:]
+#     # print('len(activations_all_instance_layer_1): ', len(activations_all_instance_layer_1))
+#     
+#     # for all instance only layer 2
+#     activations_all_instance_layer_2 = activations[2][:]
+#     # print('len(activations_all_instance_layer_2): ', len(activations_all_instance_layer_2))
+#     
+#     # for all instance only layer 3
+#     activations_all_instance_layer_3 = activations[3][:]
+#     # print('len(activations_all_instance_layer_3): ', len(activations_all_instance_layer_3))
+#     
+#     # for instance j=1
+#     j = 1
+#     activations_single_instance = []
+#     for layer_i in  activations[1:6]:
+#         activations_single_instance.append(layer_i[j])
+#     
+#     activations_single_instance = np.array(activations_single_instance)
+#     # print('activations_single_instance.shape: ', activations_single_instance.shape)
+# #     plt.imshow(activations_single_instance.T, cmap='hot', interpolation='nearest')
+# #     plt.show()
+
+
+
+# part of def _activation_pattern_over_all_instance():
+
+#                 neuron_activations[layer_index + 1] = layer_index + 1
+#                 neuron_activations[neuron_index] = neuron_index
+#                 neuron_activations['activated']
+#                 , neuron_index, activated, no_of_times_activated]
+                # neuron_activations.append(neuron_activation)
+                
+    
+#     for layer_index, layer_i_activations in enumerate(activations):
+#         no_of_times_activated = 0
+#         for instance_index, instance_j_activations in enumerate(layer_i_activations):
+#             # instance_j_activations contains the activation of neurons for a \
+#             # particular instance for a layer
+#             activation_mean_value = 0 #np.mean(instance_j_activations, axis=0)
+# #             activated_neurons = [1 if value >= activation_mean_value else 0 for value in instance_j_activations ]
+#             
+#             activated = 0
+#             for neuron_index, neuron_value in enumerate(instance_j_activations):
+#                 if neuron_value > activation_mean_value:
+#                     no_of_times_activated += 1
+#                     activated = 1
+#                 neuron_activation = [layer_index + 1, neuron_index, activated, no_of_times_activated]
+#                 neuron_activations.append(neuron_activation)
+#                 
+#             # make it a pattern if activated_neuron
+#             

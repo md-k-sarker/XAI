@@ -92,6 +92,7 @@ def convert_training_documents_to_vector(documents, classes, words, use_cache=Fa
     Output: list_of[output_vector_for_doc_1,output_vector_for_doc_2...]
     '''
     print("convert_training_documents_to_vector started...")
+
     # create an empty array for our output
     training = []
     output = []
@@ -114,6 +115,7 @@ def convert_training_documents_to_vector(documents, classes, words, use_cache=Fa
         print(util.saving_bag_of_words_data_file,
               ' not found in cache. doing operations....')
         for doc in documents:
+            # doc[0] = texts, doc[1] is label
             # initialize our bag of words
             bag = []
             # list of tokenized words for the pattern
@@ -132,14 +134,16 @@ def convert_training_documents_to_vector(documents, classes, words, use_cache=Fa
             output_row = list(output_empty)
             output_row[classes.index(doc[1])] = 1
             output.append(output_row)
+#             print('\ndoc[1]: ',doc[1], 'output_row: ',output_row)
 
         # save to cache
         with open(os.path.abspath(util.saving_bag_of_words_data_file), 'wb') as f:
             pickle.dump(training, f)
     print("convert_training_documents_to_vector finished.")
+#     print('output: ', output)
     return training, output
 
-def train_NN(X_training, y_training, hidden_layer_sizes, max_iter, use_cache=False, for_keyword=False):
+def train_NN(X_training, y_training, hidden_layer_sizes, max_iter, use_cache=False, for_keyword=False,should_save=False):
     start_time = time.time()
     print('train_NN started...')
     if  use_cache:
@@ -170,10 +174,11 @@ def train_NN(X_training, y_training, hidden_layer_sizes, max_iter, use_cache=Fal
         print('mlp fitting finished')
 
         '''save to disk'''
-        if for_keyword:
-            joblib.dump(mlp, util.saving_classifier_model_keyword_file)
-        else:
-            joblib.dump(mlp, util.saving_classifier_model_file)            
+        if should_save:
+            if for_keyword:
+                joblib.dump(mlp, util.saving_classifier_model_keyword_file)
+            else:
+                joblib.dump(mlp, util.saving_classifier_model_file)            
         clf = mlp
     end_time = time.time()
     print('trained in: ', end_time - start_time, ' seconds')
