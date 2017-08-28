@@ -18,6 +18,7 @@ import pickle
 import re
 import time
 from random import randint
+from collections import Counter
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -42,7 +43,7 @@ print("Program started")
 
 color = ['green', 'purple', 'black', 'cyan', 'green', 'blue']
 
-min_activation = 5
+min_activation = 8
 
 _DEBUG_ = False
 
@@ -395,7 +396,7 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
 
     for _x, _y, _s, _c in zip(x, y, s, concepts_computer.flatten()):
         if _s > min_activation:
-            ax.annotate(_c, xy=(_x, _y + .2), textcoords='data', color=color[1])
+            ax.annotate(_c, xy=(_x , _y + .3), textcoords='data', color=color[1])
             
     ax.legend(['class baseball', 'class computer'], loc='upper left')
     
@@ -564,7 +565,9 @@ def explain_instance(classifier, instance, pattern_all, pattern_baseball, patter
     print('len(activated_concepts_for_computer): ', len(set(activated_concepts_for_computer_flat_list)))
     print('len(activated_concepts_for_baseball): ', len(set(activated_concepts_for_baseball_flat_list)))     
     print('activated_concepts_for_computer: ', set(activated_concepts_for_computer_flat_list))
-    print('activated_concepts_for_baseball: ', set(activated_concepts_for_baseball_flat_list))     
+    print('activated_concepts_for_baseball: ', set(activated_concepts_for_baseball_flat_list))  
+    print('Counter(activated_concepts_for_computer): ',Counter(activated_concepts_for_computer_flat_list))
+    print('Counter(activated_concepts_for_baseball): ',Counter(activated_concepts_for_baseball_flat_list))   
 
 # Get Data
 X_train, X_test, y_train, y_test, X_training_keyword, \
@@ -572,14 +575,14 @@ X_train, X_test, y_train, y_test, X_training_keyword, \
 # Parameters for DNN
 no_of_hidden_layer = 5
 hidden_layer_sizes = get_hidden_neurons_sizes(X_train, no_of_hidden_layer=no_of_hidden_layer)
-max_iter = 1000
+max_iter = 10
 
 # match concept and neurons by number and layer  
 concepts_baseball = match_ontology_concepts_with_no_of_neurons(list(hidden_layer_sizes), concepts_baseball)
 concepts_computer = match_ontology_concepts_with_no_of_neurons(list(hidden_layer_sizes), concepts_computer)
 
 # train the network
-clf, activations_over_all_itr = train_network(X_train, y_train, hidden_layer_sizes=hidden_layer_sizes, max_iter=max_iter, use_cache=True,should_save=False)
+clf, activations_over_all_itr = train_network(X_train, y_train, hidden_layer_sizes=hidden_layer_sizes, max_iter=max_iter, use_cache=False,should_save=False)
 # analyze the activations
 pattern_all, pattern_baseball, pattern_computer = analyze_activations(clf, activations_over_all_itr, X_train, y_train, concepts_baseball, concepts_computer)
 # explain a single instance
