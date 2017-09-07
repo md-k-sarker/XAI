@@ -44,6 +44,7 @@ print("Program started")
 color = ['green', 'purple', 'black', 'cyan', 'green', 'blue']
 
 min_activation = 8
+min_activation_for_test = 1
 
 _DEBUG_ = False
 
@@ -264,7 +265,7 @@ def _activation_pattern_over_all_instance(activations):
     ---------
     neuron_activations_dict{1_0: n_times,..}
     neuron_activation_list[layer,index,activated_or_not,no_of_times_activated]
-    neurons_activations_np = len(activations[0]) * len(activations[0][0]
+    neurons_activations_np = len(activations[0]) * len(activations[0][0])
                            = layer * neurons
     '''
     
@@ -304,27 +305,77 @@ def _activation_pattern_over_all_instance(activations):
     return neuron_activations_dict , neuron_activations_list , neurons_activations_np
 
 
-def _activation_pattern_for_a_single_instance(clf, activations, instance_data=None):
+def _activation_pattern_for_a_single_instance(activations):
+    
+    if _DEBUG_:
+        print('\n\n\n')
+        print('type(activations): ', type(activations))
+        print('len(activations): ', len(activations))
+        print('type(activations[0]): ', type(activations[0]))
+        print('activations[0].shape: ', activations[0].shape)
+        print('activations[0]: ', activations[0])
+        print('\n\n\n')
+    
     '''
     
     Parameters:
     ----------
-    activations: activations of the neurons for all instances.
-    --activations[layers][instances]
+    activations: activations of the neurons for single instances.
+    --activations[layers][activations_as_np_array]
     
     Returns:
     ---------
-    neuron_activations = list of neuron_activation
-    neuron_activation[layer,index,activated_or_not,no_of_times_activated]
+    neuron_activations_dict{1_0: n_times,..}
+    neuron_activation_list[layer,index,activated_or_not,no_of_times_activated]
+    neurons_activations_np = len(activations[0]) * len(activations[0][0])
+                           = layer * neurons
     '''
-    
-    predict_proba, activated_neurons, activated_neurons_raw_sum = clf.predict_proba(
-    instance_data)
-    
-            
-    return activated_neurons
 
-def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_computer, concepts_computer):
+    neuron_activations_dict = {}
+    neuron_activations_list = []
+    neurons_activations_np = np.zeros((len(activations), activations[0].shape[1]))
+    
+
+    for layer_index, layer_i_activations in enumerate(activations):
+        # layer_i_activations contains the activation of neurons for a \
+        # particular layer
+        
+#             activated_neurons = [1 if value >= activation_mean_value else 0 for value in instance_j_activations ]
+        # make it a list
+        layer_i_activations = layer_i_activations.tolist()
+        # remove the outer empty list
+        layer_i_activations = layer_i_activations[0]
+        activation_mean_value = np.mean(layer_i_activations)
+        
+        if _DEBUG_:
+            print('activation_mean_value: ', activation_mean_value)
+            print('layer_i_activations: ', layer_i_activations)
+        
+        for neuron_index, neuron_value in enumerate(layer_i_activations):
+            activated = 0
+            if neuron_value > activation_mean_value:
+                activated = 1
+                # index_of_this_neuron 
+                # no_of_times_activated = neuron_activations.index([layer_index + 1,neuron_index,activated,no_of_times_activated]) 1
+            
+                _key = str(layer_index + 1) + '_' + str(neuron_index)
+                if _key in neuron_activations_dict:
+                    neuron_activations_dict[_key] = neuron_activations_dict[_key] + 1  
+                else:
+                    neuron_activations_dict[_key] = 1
+            else:
+                _key = str(layer_index + 1) + '_' + str(neuron_index)
+                if _key not in neuron_activations_dict:
+                    neuron_activations_dict[_key] = 0
+            neuron_activation_list = [layer_index + 1, neuron_index, activated, neuron_activations_dict[_key]]        
+            neurons_activations_np[layer_index, neuron_index] = neuron_activations_dict[_key]
+            
+            neuron_activations_list.append(neuron_activation_list) 
+            
+    return neuron_activations_dict , neuron_activations_list , neurons_activations_np
+    
+
+def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_computer, concepts_computer, patterns_test_instance):
     '''plot figures
     Parameters:
     ----------
@@ -339,66 +390,102 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
     x_scale = 25
 
     ax_all = plt.figure(1).add_subplot(111)
-    ax = plt.figure(2).add_subplot(111)
+    ax_all_with_semantics = plt.figure(2).add_subplot(111)
+    ax_test_instance = plt.figure(3).add_subplot(111)
     
+    '''figure without semantics'''
     '''for all'''
     x = np.zeros(patterns_all.shape[0] * patterns_all.shape[1])
     x_tick = np.zeros(patterns_all.shape[0] * patterns_all.shape[1])
     x_tick_label = np.zeros(patterns_all.shape[0] * patterns_all.shape[1])
     y = np.zeros(patterns_all.shape[0] * patterns_all.shape[1])
-    s = np.zeros(patterns_all.shape[0] * patterns_all.shape[1])    
+    s_all = np.zeros(patterns_all.shape[0] * patterns_all.shape[1])    
     
     for i, layer_l in enumerate(patterns_all):
         for j, neuron_n in enumerate(layer_l):
             x[i * patterns_all.shape[1] + j] = (i + 1) / x_scale
             y[i * patterns_all.shape[1] + j] = j + 1
-            s[i * patterns_all.shape[1] + j] = neuron_n * s_scale
+            s_all[i * patterns_all.shape[1] + j] = neuron_n * s_scale
             x_tick[i * patterns_all.shape[1] + j] = (i + 1)
             x_tick_label[i * patterns_all.shape[1] + j] = (i + 1)
-    ax_all.scatter(x, y, s=s, color=color[0])
+    ax_all.scatter(x, y, s=s_all, color=color[0])
     ax_all.set_xticklabels([0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5])
     
+    '''figure with semantics'''
     '''for baseball'''
     x = np.zeros(patterns_baseball.shape[0] * patterns_baseball.shape[1])
     x_tick = np.zeros(patterns_baseball.shape[0] * patterns_baseball.shape[1])
     x_tick_label = np.zeros(patterns_baseball.shape[0] * patterns_baseball.shape[1])
     y = np.zeros(patterns_baseball.shape[0] * patterns_baseball.shape[1])
-    s = np.zeros(patterns_baseball.shape[0] * patterns_baseball.shape[1])    
+    s_baseball = np.zeros(patterns_baseball.shape[0] * patterns_baseball.shape[1])    
     
     for i, layer_l in enumerate(patterns_baseball):
         for j, neuron_n in enumerate(layer_l):
             x[i * patterns_baseball.shape[1] + j] = (i + 1) / x_scale
             y[i * patterns_baseball.shape[1] + j] = j + 1
-            s[i * patterns_baseball.shape[1] + j] = neuron_n * s_scale
+            s_baseball[i * patterns_baseball.shape[1] + j] = neuron_n * s_scale
             x_tick[i * patterns_baseball.shape[1] + j] = (i + 1)
             x_tick_label[i * patterns_baseball.shape[1] + j] = (i + 1)
-    ax.scatter(x, y, s=s, color=color[0])
+    ax_all_with_semantics.scatter(x, y, s=s_baseball, color=color[0])
     x_ticks = ['x' for x in range(1, 6, 1)]
     # ax.set_xticklabels([1,2,3,4,5])
     
-    for _x, _y, _s, _c in zip(x, y, s, concepts_baseball.flatten()):
+    '''annotate/attach the concepts/semantics'''
+    for _x, _y, _s, _c in zip(x, y, s_baseball, concepts_baseball.flatten()):
         if _s > min_activation:
-            ax.annotate(_c, xy=(_x, _y), textcoords='data', color=color[0])
+            ax_all_with_semantics.annotate(_c, xy=(_x, _y), textcoords='data', color=color[0])
     
     '''for computer'''
     x = np.zeros(patterns_computer.shape[0] * patterns_computer.shape[1])
     y = np.zeros(patterns_computer.shape[0] * patterns_computer.shape[1])
-    s = np.zeros(patterns_computer.shape[0] * patterns_computer.shape[1])
+    s_computer = np.zeros(patterns_computer.shape[0] * patterns_computer.shape[1])
     
     for i, layer_l in enumerate(patterns_computer):
         for j, neuron_n in enumerate(layer_l):
             x[i * patterns_computer.shape[1] + j] = (i + 1) / x_scale
             y[i * patterns_computer.shape[1] + j] = j + 1
-            s[i * patterns_computer.shape[1] + j] = neuron_n * s_scale
-    ax.scatter(x, y, s=s, color=color[1])
+            s_computer[i * patterns_computer.shape[1] + j] = neuron_n * s_scale
+    ax_all_with_semantics.scatter(x, y, s=s_computer, color=color[1])
     x_ticks = [x for x in range(1, 6, 1)]
     # ax.set_xticks(x_ticks)
-
-    for _x, _y, _s, _c in zip(x, y, s, concepts_computer.flatten()):
+    
+    '''annotate/attach the concepts/semantics'''
+    for _x, _y, _s, _c in zip(x, y, s_computer, concepts_computer.flatten()):
         if _s > min_activation:
-            ax.annotate(_c, xy=(_x , _y + .3), textcoords='data', color=color[1])
+            ax_all_with_semantics.annotate(_c, xy=(_x , _y + .3), textcoords='data', color=color[1])
+    
+    ax_all_with_semantics.legend(['class baseball', 'class computer'], loc='upper left')
             
-    ax.legend(['class baseball', 'class computer'], loc='upper left')
+            
+    '''figure for test instance'''
+    x = np.zeros(patterns_test_instance.shape[0] * patterns_test_instance.shape[1])
+    x_tick = np.zeros(patterns_test_instance.shape[0] * patterns_test_instance.shape[1])
+    x_tick_label = np.zeros(patterns_test_instance.shape[0] * patterns_test_instance.shape[1])
+    y = np.zeros(patterns_test_instance.shape[0] * patterns_test_instance.shape[1])
+    s_test_instance = np.zeros(patterns_test_instance.shape[0] * patterns_test_instance.shape[1])    
+    
+    for i, layer_l in enumerate(patterns_test_instance):
+        for j, neuron_n in enumerate(layer_l):
+            x[i * patterns_test_instance.shape[1] + j] = (i + 1) / x_scale
+            y[i * patterns_test_instance.shape[1] + j] = j + 1
+            s_test_instance[i * patterns_test_instance.shape[1] + j] = neuron_n * s_scale
+            x_tick[i * patterns_test_instance.shape[1] + j] = (i + 1)
+            x_tick_label[i * patterns_test_instance.shape[1] + j] = (i + 1)
+    ax_test_instance.scatter(x, y, s=s_test_instance, color=color[2])
+    x_ticks = ['x' for x in range(1, 6, 1)]
+    # ax.set_xticklabels([1,2,3,4,5])
+    
+    '''annotate/attach the concepts/semantics'''
+    for _x, _y, _s_b, _s_c, _s_t, _c_b, _c_c in zip(x, y, s_baseball, s_computer, s_test_instance, concepts_baseball.flatten(), concepts_computer.flatten()):
+        if _s_b > min_activation and _s_t >= min_activation_for_test:
+            ax_test_instance.annotate(_c_b, xy=(_x, _y), textcoords='data', color=color[0])
+        if _s_c > min_activation and _s_t >= min_activation_for_test:
+            ax_test_instance.annotate(_c_c, xy=(_x , _y + .3), textcoords='data', color=color[1])
+    
+    
+    ax_all_with_semantics.legend(['class baseball', 'class computer'], loc='upper left')
+    #ax_test_instance.legend(['class baseball', 'class computer'], loc='upper left')
+    ax_test_instance.set_title('Explanation for single instance')
     
 
 def display_figure():
@@ -450,8 +537,9 @@ def analyze_activations(clf, activations, X_train, y_train, concepts_baseball, c
             activations_single_instance.append(layer_i[i])
         activation_all_instance.append(activations_single_instance)
     
-    print('X_train.shape: ', X_train.shape)
-    print('len(activation_all_instance): ', len(activation_all_instance))
+    if _DEBUG_:
+        print('X_train.shape: ', X_train.shape)
+        print('len(activation_all_instance): ', len(activation_all_instance))
     
     # clf.predict_proba()
     activations_for_baseball = []
@@ -471,8 +559,8 @@ def analyze_activations(clf, activations, X_train, y_train, concepts_baseball, c
     pattern_baseball_dict, pattern_baseball_list , pattern_baseball_np_array = _activation_pattern_over_all_instance(activations_for_baseball)
     pattern_computer_dict, pattern_computer_list, pattern_computer_np_array = _activation_pattern_over_all_instance(activations_for_computer)
     
-    # plot figure
-    plot_figure(pattern_all_np_array, pattern_baseball_np_array, np.array(concepts_baseball), pattern_computer_np_array, np.array(concepts_computer))
+    # do not plot here
+    # plot_figure(pattern_all_np_array, pattern_baseball_np_array, np.array(concepts_baseball), pattern_computer_np_array, np.array(concepts_computer))
     
     return pattern_all_np_array, pattern_baseball_np_array, pattern_computer_np_array
     
@@ -517,12 +605,20 @@ def explain_instance(classifier, instance, pattern_all, pattern_baseball, patter
     
     Returns:
     --------
+    neurons_activations_np
     '''
-    predict_proba, activated_neurons, activated_neurons_raw_sum = classifier.predict_proba(instance)
+    predict_proba, activations, activated_neurons, activated_neurons_raw_sum = classifier.predict_proba(instance)
+    
+    # take only hidden layer activations
+    activations = activations[1:6]
+    neuron_activations_dict , neuron_activations_list , neurons_activations_np = _activation_pattern_for_a_single_instance(activations)
+    
     if _DEBUG_:
         print('instance: ', instance[:20])  
-        print('len(activated_neurons): ', len(activated_neurons))
-    
+        print('type(activated_neurons): ', type(activated_neurons), '\tlen(activated_neurons): ', len(activated_neurons))
+        print('type(activated_neurons[0]): ', type(activated_neurons[0]), '\tlen(activated_neurons[0]): ', len(activated_neurons[0]))
+        print('activated_neurons[1]: ', activated_neurons[1])
+
     '''match with baseball'''
     activated_concepts_for_baseball = []
     for a_neurons, patterns, concepts in zip(activated_neurons[:5], pattern_baseball, concepts_baseball):
@@ -552,7 +648,7 @@ def explain_instance(classifier, instance, pattern_all, pattern_baseball, patter
         
         activated_concepts_for_computer.append(activated_concepts_this_l)
     
-    '''convert to set'''
+    '''convert to flat list'''
     activated_concepts_for_computer_flat_list = [item for sublist in activated_concepts_for_computer for item in sublist]
     activated_concepts_for_baseball_flat_list = [item for sublist in activated_concepts_for_baseball for item in sublist]
     
@@ -560,14 +656,18 @@ def explain_instance(classifier, instance, pattern_all, pattern_baseball, patter
         print('activated_concepts_for_computer: ', activated_concepts_for_computer)
         print('activated_concepts_for_baseball: ', activated_concepts_for_baseball) 
 
-    print('predict_proba: ', predict_proba)
-    print('y_label_mapping: ', y_label_mapping)
-    print('len(activated_concepts_for_computer): ', len(set(activated_concepts_for_computer_flat_list)))
-    print('len(activated_concepts_for_baseball): ', len(set(activated_concepts_for_baseball_flat_list)))     
-    print('activated_concepts_for_computer: ', set(activated_concepts_for_computer_flat_list))
-    print('activated_concepts_for_baseball: ', set(activated_concepts_for_baseball_flat_list))  
-    print('Counter(activated_concepts_for_computer): ',Counter(activated_concepts_for_computer_flat_list))
-    print('Counter(activated_concepts_for_baseball): ',Counter(activated_concepts_for_baseball_flat_list))   
+        print('predict_proba: ', predict_proba)
+        print('y_label_mapping: ', y_label_mapping)
+        print('len(activated_concepts_for_computer): ', len(set(activated_concepts_for_computer_flat_list)))
+        print('len(activated_concepts_for_baseball): ', len(set(activated_concepts_for_baseball_flat_list)))     
+        print('activated_concepts_for_computer: ', set(activated_concepts_for_computer_flat_list))
+        print('activated_concepts_for_baseball: ', set(activated_concepts_for_baseball_flat_list))  
+        print('Counter(activated_concepts_for_computer): ', Counter(activated_concepts_for_computer_flat_list))
+        print('Counter(activated_concepts_for_baseball): ', Counter(activated_concepts_for_baseball_flat_list))   
+        print('\n\n')
+        print('')
+        
+    return neurons_activations_np
 
 # Get Data
 X_train, X_test, y_train, y_test, X_training_keyword, \
@@ -575,18 +675,20 @@ X_train, X_test, y_train, y_test, X_training_keyword, \
 # Parameters for DNN
 no_of_hidden_layer = 5
 hidden_layer_sizes = get_hidden_neurons_sizes(X_train, no_of_hidden_layer=no_of_hidden_layer)
-max_iter = 10
+max_iter = 20
 
 # match concept and neurons by number and layer  
 concepts_baseball = match_ontology_concepts_with_no_of_neurons(list(hidden_layer_sizes), concepts_baseball)
 concepts_computer = match_ontology_concepts_with_no_of_neurons(list(hidden_layer_sizes), concepts_computer)
 
 # train the network
-clf, activations_over_all_itr = train_network(X_train, y_train, hidden_layer_sizes=hidden_layer_sizes, max_iter=max_iter, use_cache=False,should_save=False)
+clf, activations_over_all_itr = train_network(X_train, y_train, hidden_layer_sizes=hidden_layer_sizes, max_iter=max_iter, use_cache=False, should_save=False)
 # analyze the activations
-pattern_all, pattern_baseball, pattern_computer = analyze_activations(clf, activations_over_all_itr, X_train, y_train, concepts_baseball, concepts_computer)
+pattern_all_np, pattern_baseball_np, pattern_computer_np = analyze_activations(clf, activations_over_all_itr, X_train, y_train, concepts_baseball, concepts_computer)
 # explain a single instance
-explain_instance(clf, X_test[0], pattern_all.tolist(), pattern_baseball.tolist(), pattern_computer.tolist(), concepts_baseball, concepts_computer, y_label_mapping)
+neurons_activations_test_instance_np = explain_instance(clf, X_test[0], pattern_all_np.tolist(), pattern_baseball_np.tolist(), pattern_computer_np.tolist(), concepts_baseball, concepts_computer, y_label_mapping)
+# plot figures
+plot_figure(pattern_all_np, pattern_baseball_np, np.array(concepts_baseball), pattern_computer_np, np.array(concepts_computer), neurons_activations_test_instance_np)
 # Display figures
 display_figure()
 

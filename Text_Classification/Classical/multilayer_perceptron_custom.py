@@ -109,6 +109,7 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
         activated_neurons = []
         activated_neurons_as_dict = []
         activated_neurons_raw_sum = []
+        activated_neurons_as_np = np.zeros_like((len(activations[0]) * len(activations[0][0])))
         '''for explanations end'''
         
         # Iterate over the hidden layers
@@ -439,7 +440,7 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
             self._fit_lbfgs(X, y, activations, deltas, coef_grads,
                             intercept_grads, layer_units)
         ''' for explanation start'''
-        return self,  activations_over_all_itr
+        return self, activations_over_all_itr
         ''' for explanation end'''
 
     def _validate_hyperparameters(self):
@@ -749,7 +750,7 @@ class BaseMultilayerPerceptron_Custom(six.with_metaclass(ABCMeta, BaseEstimator)
         '''for explanations end'''
         y_pred = activations[-1]
         '''for explanations start'''
-        return y_pred, activated_neurons, activated_neurons_raw_sum
+        return y_pred, activations, activated_neurons, activated_neurons_raw_sum
         '''for explanations end'''
 
 class MLPClassifier_Custom(BaseMultilayerPerceptron_Custom, ClassifierMixin):
@@ -1017,7 +1018,7 @@ class MLPClassifier_Custom(BaseMultilayerPerceptron_Custom, ClassifierMixin):
             The predicted classes.
         """
         check_is_fitted(self, "coefs_")
-        y_pred, activated_neurons, activated_neurons_raw_sum = self._predict(X)
+        y_pred, activations, activated_neurons, activated_neurons_raw_sum = self._predict(X)
 
         if self.n_outputs_ == 1:
             y_pred = y_pred.ravel()
@@ -1119,7 +1120,7 @@ class MLPClassifier_Custom(BaseMultilayerPerceptron_Custom, ClassifierMixin):
         """
         check_is_fitted(self, "coefs_")
         ''' for explanation start'''
-        y_pred, activated_neurons, activated_neurons_raw_sum = self._predict(X)
+        y_pred, activations, activated_neurons, activated_neurons_raw_sum = self._predict(X)
         ''' for explanation end'''
         
         if self.n_outputs_ == 1:
@@ -1127,10 +1128,10 @@ class MLPClassifier_Custom(BaseMultilayerPerceptron_Custom, ClassifierMixin):
 
         if y_pred.ndim == 1:
             ''' for explanation start'''
-            return np.vstack([1 - y_pred, y_pred]).T, activated_neurons, activated_neurons_raw_sum
+            return np.vstack([1 - y_pred, y_pred]).T, activations, activated_neurons, activated_neurons_raw_sum
             ''' for explanation end'''
         else:
             ''' for explanation start'''
-            return y_pred, activated_neurons, activated_neurons_raw_sum
+            return y_pred, activations, activated_neurons, activated_neurons_raw_sum
             ''' for explanation end'''
 
