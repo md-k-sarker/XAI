@@ -388,6 +388,7 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
     '''
     s_scale = 1
     x_scale = 25
+    max_neuron_for_display = 50
 
     ax_all = plt.figure(1).add_subplot(111)
     ax_all_with_semantics = plt.figure(2).add_subplot(111)
@@ -395,37 +396,41 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
     
     '''figure without semantics'''
     '''for all'''
-    x = np.zeros(patterns_all.shape[0] * patterns_all.shape[1])
-    x_tick = np.zeros(patterns_all.shape[0] * patterns_all.shape[1])
-    x_tick_label = np.zeros(patterns_all.shape[0] * patterns_all.shape[1])
-    y = np.zeros(patterns_all.shape[0] * patterns_all.shape[1])
-    s_all = np.zeros(patterns_all.shape[0] * patterns_all.shape[1])    
+    x = np.zeros(patterns_all.shape[0] * max_neuron_for_display)
+    x_tick = np.zeros(patterns_all.shape[0] * max_neuron_for_display)
+    x_tick_label = np.zeros(patterns_all.shape[0] * max_neuron_for_display)
+    y = np.zeros(patterns_all.shape[0] * max_neuron_for_display)
+    s_all = np.zeros(patterns_all.shape[0] * max_neuron_for_display)    
     
     for i, layer_l in enumerate(patterns_all):
         for j, neuron_n in enumerate(layer_l):
-            x[i * patterns_all.shape[1] + j] = (i + 1) / x_scale
-            y[i * patterns_all.shape[1] + j] = j + 1
-            s_all[i * patterns_all.shape[1] + j] = neuron_n * s_scale
-            x_tick[i * patterns_all.shape[1] + j] = (i + 1)
-            x_tick_label[i * patterns_all.shape[1] + j] = (i + 1)
+            if j > max_neuron_for_display -1 :
+                break
+            x[i * max_neuron_for_display + j] = (i + 1) / x_scale
+            y[i * max_neuron_for_display + j] = j + 1
+            s_all[i * max_neuron_for_display + j] = neuron_n * s_scale
+            x_tick[i * max_neuron_for_display + j] = (i + 1)
+            x_tick_label[i * max_neuron_for_display + j] = (i + 1)
     ax_all.scatter(x, y, s=s_all, color=color[0])
     ax_all.set_xticklabels([0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5])
     
     '''figure with semantics'''
     '''for baseball'''
-    x = np.zeros(patterns_baseball.shape[0] * patterns_baseball.shape[1])
-    x_tick = np.zeros(patterns_baseball.shape[0] * patterns_baseball.shape[1])
-    x_tick_label = np.zeros(patterns_baseball.shape[0] * patterns_baseball.shape[1])
-    y = np.zeros(patterns_baseball.shape[0] * patterns_baseball.shape[1])
-    s_baseball = np.zeros(patterns_baseball.shape[0] * patterns_baseball.shape[1])    
+    x = np.zeros(patterns_baseball.shape[0] * max_neuron_for_display)
+    x_tick = np.zeros(patterns_baseball.shape[0] * max_neuron_for_display)
+    x_tick_label = np.zeros(patterns_baseball.shape[0] * max_neuron_for_display)
+    y = np.zeros(patterns_baseball.shape[0] * max_neuron_for_display)
+    s_baseball = np.zeros(patterns_baseball.shape[0] * max_neuron_for_display)    
     
     for i, layer_l in enumerate(patterns_baseball):
         for j, neuron_n in enumerate(layer_l):
-            x[i * patterns_baseball.shape[1] + j] = (i + 1) / x_scale
-            y[i * patterns_baseball.shape[1] + j] = j + 1
-            s_baseball[i * patterns_baseball.shape[1] + j] = neuron_n * s_scale
-            x_tick[i * patterns_baseball.shape[1] + j] = (i + 1)
-            x_tick_label[i * patterns_baseball.shape[1] + j] = (i + 1)
+            if j > max_neuron_for_display -1:
+                break
+            x[i * max_neuron_for_display + j] = (i + 1) / x_scale
+            y[i * max_neuron_for_display + j] = j + 1
+            s_baseball[i * max_neuron_for_display + j] = neuron_n * s_scale
+            x_tick[i * max_neuron_for_display + j] = (i + 1)
+            x_tick_label[i * max_neuron_for_display + j] = (i + 1)
     ax_all_with_semantics.scatter(x, y, s=s_baseball, color=color[0])
     x_ticks = ['x' for x in range(1, 6, 1)]
     # ax.set_xticklabels([1,2,3,4,5])
@@ -436,15 +441,17 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
             ax_all_with_semantics.annotate(_c, xy=(_x, _y), textcoords='data', color=color[0])
     
     '''for computer'''
-    x = np.zeros(patterns_computer.shape[0] * patterns_computer.shape[1])
-    y = np.zeros(patterns_computer.shape[0] * patterns_computer.shape[1])
-    s_computer = np.zeros(patterns_computer.shape[0] * patterns_computer.shape[1])
+    x = np.zeros(patterns_computer.shape[0] * max_neuron_for_display)
+    y = np.zeros(patterns_computer.shape[0] * max_neuron_for_display)
+    s_computer = np.zeros(patterns_computer.shape[0] * max_neuron_for_display)
     
     for i, layer_l in enumerate(patterns_computer):
         for j, neuron_n in enumerate(layer_l):
-            x[i * patterns_computer.shape[1] + j] = (i + 1) / x_scale
-            y[i * patterns_computer.shape[1] + j] = j + 1
-            s_computer[i * patterns_computer.shape[1] + j] = neuron_n * s_scale
+            if j > max_neuron_for_display -1:
+                break
+            x[i * max_neuron_for_display + j] = (i + 1) / x_scale
+            y[i * max_neuron_for_display + j] = j + 1
+            s_computer[i * max_neuron_for_display + j] = neuron_n * s_scale
     ax_all_with_semantics.scatter(x, y, s=s_computer, color=color[1])
     x_ticks = [x for x in range(1, 6, 1)]
     # ax.set_xticks(x_ticks)
@@ -458,19 +465,21 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
             
             
     '''figure for test instance'''
-    x = np.zeros(patterns_test_instance.shape[0] * patterns_test_instance.shape[1])
-    x_tick = np.zeros(patterns_test_instance.shape[0] * patterns_test_instance.shape[1])
-    x_tick_label = np.zeros(patterns_test_instance.shape[0] * patterns_test_instance.shape[1])
-    y = np.zeros(patterns_test_instance.shape[0] * patterns_test_instance.shape[1])
-    s_test_instance = np.zeros(patterns_test_instance.shape[0] * patterns_test_instance.shape[1])    
+    x = np.zeros(patterns_test_instance.shape[0] * max_neuron_for_display)
+    x_tick = np.zeros(patterns_test_instance.shape[0] * max_neuron_for_display)
+    x_tick_label = np.zeros(patterns_test_instance.shape[0] * max_neuron_for_display)
+    y = np.zeros(patterns_test_instance.shape[0] * max_neuron_for_display)
+    s_test_instance = np.zeros(patterns_test_instance.shape[0] * max_neuron_for_display)    
     
     for i, layer_l in enumerate(patterns_test_instance):
         for j, neuron_n in enumerate(layer_l):
-            x[i * patterns_test_instance.shape[1] + j] = (i + 1) / x_scale
-            y[i * patterns_test_instance.shape[1] + j] = j + 1
-            s_test_instance[i * patterns_test_instance.shape[1] + j] = neuron_n * s_scale
-            x_tick[i * patterns_test_instance.shape[1] + j] = (i + 1)
-            x_tick_label[i * patterns_test_instance.shape[1] + j] = (i + 1)
+            if j > max_neuron_for_display -1 :
+                break
+            x[i * max_neuron_for_display + j] = (i + 1) / x_scale
+            y[i * max_neuron_for_display + j] = j + 1
+            s_test_instance[i * max_neuron_for_display + j] = neuron_n * s_scale
+            x_tick[i * max_neuron_for_display + j] = (i + 1)
+            x_tick_label[i * max_neuron_for_display + j] = (i + 1)
     ax_test_instance.scatter(x, y, s=s_test_instance, color=color[2])
     x_ticks = ['x' for x in range(1, 6, 1)]
     # ax.set_xticklabels([1,2,3,4,5])
@@ -675,7 +684,7 @@ X_train, X_test, y_train, y_test, X_training_keyword, \
 # Parameters for DNN
 no_of_hidden_layer = 5
 hidden_layer_sizes = get_hidden_neurons_sizes(X_train, no_of_hidden_layer=no_of_hidden_layer)
-max_iter = 20
+max_iter = 1
 
 # match concept and neurons by number and layer  
 concepts_baseball = match_ontology_concepts_with_no_of_neurons(list(hidden_layer_sizes), concepts_baseball)
