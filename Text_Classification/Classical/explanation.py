@@ -46,7 +46,7 @@ color = ['green', 'purple', 'black', 'cyan', 'green', 'blue']
 min_activation = 8
 min_activation_for_test = 1
 
-_DEBUG_ = False
+_DEBUG_ = True
 
 def preprocess_concepts(concepts):
     '''Convert panda dataframe concepts to list of concepts
@@ -62,10 +62,10 @@ def preprocess_concepts(concepts):
     -------
     concepts: concepts: [.....[n-1_th_hidden_layer_concepts],[n_th_hidden_layer_concepts],[output_layer_concepts]]         
     '''
-    concepts = concepts.fillna(0).values
+    concepts = concepts.values
     concepts_as_list = []
     
-    for i in range(concepts.shape[0]):
+    for i in range(concepts.shape[0]-1,-1,-1):
         concepts_as_list.append(concepts[i, :])
         
     return concepts_as_list
@@ -73,6 +73,7 @@ def preprocess_concepts(concepts):
 
 
 # get data
+
 def get_data():
     '''
     DataSet
@@ -130,8 +131,35 @@ def get_data():
     concepts_baseball = dth.load_concepts(util.concepts_file_baseball, None, use_cache=False)
     concepts_computer = dth.load_concepts(util.concepts_file_computer, None, use_cache=False)
     
+    if _DEBUG_:
+        import csv
+        with open('baseball_concepts_raw_0.csv', 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter=',',
+                                    quoting=csv.QUOTE_MINIMAL)
+            for c in concepts_baseball:
+                csvwriter.writerow(c)
+                
+        with open('computer_concepts_raw_0.csv', 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter=',',
+                                     quoting=csv.QUOTE_MINIMAL)
+            for c in concepts_computer:
+                csvwriter.writerow(c)
+            
     concepts_baseball = preprocess_concepts(concepts_baseball)
     concepts_computer = preprocess_concepts(concepts_computer)
+    if _DEBUG_:
+        import csv
+        with open('baseball_concepts_raw_1.csv', 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter=',',
+                                    quoting=csv.QUOTE_MINIMAL)
+            for c in concepts_baseball:
+                csvwriter.writerow(c)
+                
+        with open('computer_concepts_raw_1.csv', 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter=',',
+                                     quoting=csv.QUOTE_MINIMAL)
+            for c in concepts_computer:
+                csvwriter.writerow(c)
     
     print('#######################')
     print('X_training[5][:20]: ', X_training[5][:20])
@@ -147,8 +175,7 @@ def get_data():
     return X_training, X_test, y_training, y_test , X_training_keyword, \
         y_training_keyword, words, words_keywords, concepts_baseball, concepts_computer, y_label_mapping
 
-
-    
+   
 def match_ontology_concepts_with_no_of_neurons(neurons, concepts, random_prob=True):
     '''
     no. of neuron and no. of concepts should be same.
@@ -308,12 +335,12 @@ def _activation_pattern_over_all_instance(activations):
 def _activation_pattern_for_a_single_instance(activations):
     
     if _DEBUG_:
-        print('\n\n\n')
-        print('type(activations): ', type(activations))
-        print('len(activations): ', len(activations))
-        print('type(activations[0]): ', type(activations[0]))
-        print('activations[0].shape: ', activations[0].shape)
-        print('activations[0]: ', activations[0])
+#         print('\n\n\n')
+#         print('type(activations): ', type(activations))
+#         print('len(activations): ', len(activations))
+#         print('type(activations[0]): ', type(activations[0]))
+#         print('activations[0].shape: ', activations[0].shape)
+#         print('activations[0]: ', activations[0])
         print('\n\n\n')
     
     '''
@@ -347,9 +374,9 @@ def _activation_pattern_for_a_single_instance(activations):
         layer_i_activations = layer_i_activations[0]
         activation_mean_value = np.mean(layer_i_activations)
         
-        if _DEBUG_:
-            print('activation_mean_value: ', activation_mean_value)
-            print('layer_i_activations: ', layer_i_activations)
+#         if _DEBUG_:
+#             print('activation_mean_value: ', activation_mean_value)
+#             print('layer_i_activations: ', layer_i_activations)
         
         for neuron_index, neuron_value in enumerate(layer_i_activations):
             activated = 0
@@ -383,12 +410,33 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
         layer * neurons_in_layer
     
     Returns:
-    -------
-    
+    -------  
     '''
+    
     s_scale = 1
-    x_scale = 25
+    x_scale = 1
     max_neuron_for_display = 50
+    x_ticks = [1,2,3,4,5]
+    x_ticks_labels = [1,2,3,4,5]
+    # use only the max_neuron_for_display neurons semantic
+    print('concepts_baseball.shape: ', concepts_baseball.shape)
+    concepts_baseball = concepts_baseball[0:5,0:max_neuron_for_display]
+    concepts_computer = concepts_computer[0:5,0:max_neuron_for_display]
+    
+    if _DEBUG_:
+        with open('baseball_concepts_for_plot.csv', 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter=',',
+                                    quoting=csv.QUOTE_MINIMAL)
+            for c in concepts_baseball:
+                csvwriter.writerow(c)
+                
+        with open('computer_concepts_for_plot.csv', 'w', newline='') as csvfile:
+            csvwriter = csv.writer(csvfile, delimiter=',',
+                                     quoting=csv.QUOTE_MINIMAL)
+            for c in concepts_computer:
+                csvwriter.writerow(c)
+    
+
 
     ax_all = plt.figure(1).add_subplot(111)
     ax_all_with_semantics = plt.figure(2).add_subplot(111)
@@ -412,7 +460,8 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
             x_tick[i * max_neuron_for_display + j] = (i + 1)
             x_tick_label[i * max_neuron_for_display + j] = (i + 1)
     ax_all.scatter(x, y, s=s_all, color=color[0])
-    ax_all.set_xticklabels([0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5])
+    ax_all.set_xticks(x_ticks)
+    #ax_all.set_xticklabels([0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5])
     
     '''figure with semantics'''
     '''for baseball'''
@@ -432,7 +481,7 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
             x_tick[i * max_neuron_for_display + j] = (i + 1)
             x_tick_label[i * max_neuron_for_display + j] = (i + 1)
     ax_all_with_semantics.scatter(x, y, s=s_baseball, color=color[0])
-    x_ticks = ['x' for x in range(1, 6, 1)]
+    #x_ticks = ['x' for x in range(1, 6, 1)]
     # ax.set_xticklabels([1,2,3,4,5])
     
     '''annotate/attach the concepts/semantics'''
@@ -453,8 +502,11 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
             y[i * max_neuron_for_display + j] = j + 1
             s_computer[i * max_neuron_for_display + j] = neuron_n * s_scale
     ax_all_with_semantics.scatter(x, y, s=s_computer, color=color[1])
-    x_ticks = [x for x in range(1, 6, 1)]
+    #x_ticks = [x for x in range(1, 6, 1)]
     # ax.set_xticks(x_ticks)
+    
+    # set xticks
+    ax_all_with_semantics.set_xticks(x_ticks)
     
     '''annotate/attach the concepts/semantics'''
     for _x, _y, _s, _c in zip(x, y, s_computer, concepts_computer.flatten()):
@@ -481,8 +533,9 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
             x_tick[i * max_neuron_for_display + j] = (i + 1)
             x_tick_label[i * max_neuron_for_display + j] = (i + 1)
     ax_test_instance.scatter(x, y, s=s_test_instance, color=color[2])
-    x_ticks = ['x' for x in range(1, 6, 1)]
+    #x_ticks = ['x' for x in range(1, 6, 1)]
     # ax.set_xticklabels([1,2,3,4,5])
+    ax_test_instance.set_xticks(x_ticks)
     
     '''annotate/attach the concepts/semantics'''
     for _x, _y, _s_b, _s_c, _s_t, _c_b, _c_c in zip(x, y, s_baseball, s_computer, s_test_instance, concepts_baseball.flatten(), concepts_computer.flatten()):
@@ -500,6 +553,7 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
 def display_figure():
     '''Display all the plotted figures'''
     plt.show()
+
 
 def analyze_activations(clf, activations, X_train, y_train, concepts_baseball, concepts_computer):
     '''
@@ -546,9 +600,9 @@ def analyze_activations(clf, activations, X_train, y_train, concepts_baseball, c
             activations_single_instance.append(layer_i[i])
         activation_all_instance.append(activations_single_instance)
     
-    if _DEBUG_:
-        print('X_train.shape: ', X_train.shape)
-        print('len(activation_all_instance): ', len(activation_all_instance))
+#     if _DEBUG_:
+#         print('X_train.shape: ', X_train.shape)
+#         print('len(activation_all_instance): ', len(activation_all_instance))
     
     # clf.predict_proba()
     activations_for_baseball = []
@@ -573,7 +627,6 @@ def analyze_activations(clf, activations, X_train, y_train, concepts_baseball, c
     
     return pattern_all_np_array, pattern_baseball_np_array, pattern_computer_np_array
     
-
 
 def get_hidden_neurons_sizes(X_train, no_of_hidden_layer):
     no_of_hidden_neurons = ((len(X_train[0])))
@@ -622,11 +675,11 @@ def explain_instance(classifier, instance, pattern_all, pattern_baseball, patter
     activations = activations[1:6]
     neuron_activations_dict , neuron_activations_list , neurons_activations_np = _activation_pattern_for_a_single_instance(activations)
     
-    if _DEBUG_:
-        print('instance: ', instance[:20])  
-        print('type(activated_neurons): ', type(activated_neurons), '\tlen(activated_neurons): ', len(activated_neurons))
-        print('type(activated_neurons[0]): ', type(activated_neurons[0]), '\tlen(activated_neurons[0]): ', len(activated_neurons[0]))
-        print('activated_neurons[1]: ', activated_neurons[1])
+#     if _DEBUG_:
+#         print('instance: ', instance[:20])  
+#         print('type(activated_neurons): ', type(activated_neurons), '\tlen(activated_neurons): ', len(activated_neurons))
+#         print('type(activated_neurons[0]): ', type(activated_neurons[0]), '\tlen(activated_neurons[0]): ', len(activated_neurons[0]))
+#         print('activated_neurons[1]: ', activated_neurons[1])
 
     '''match with baseball'''
     activated_concepts_for_baseball = []
@@ -661,26 +714,43 @@ def explain_instance(classifier, instance, pattern_all, pattern_baseball, patter
     activated_concepts_for_computer_flat_list = [item for sublist in activated_concepts_for_computer for item in sublist]
     activated_concepts_for_baseball_flat_list = [item for sublist in activated_concepts_for_baseball for item in sublist]
     
-    if _DEBUG_:
-        print('activated_concepts_for_computer: ', activated_concepts_for_computer)
-        print('activated_concepts_for_baseball: ', activated_concepts_for_baseball) 
-
-        print('predict_proba: ', predict_proba)
-        print('y_label_mapping: ', y_label_mapping)
-        print('len(activated_concepts_for_computer): ', len(set(activated_concepts_for_computer_flat_list)))
-        print('len(activated_concepts_for_baseball): ', len(set(activated_concepts_for_baseball_flat_list)))     
-        print('activated_concepts_for_computer: ', set(activated_concepts_for_computer_flat_list))
-        print('activated_concepts_for_baseball: ', set(activated_concepts_for_baseball_flat_list))  
-        print('Counter(activated_concepts_for_computer): ', Counter(activated_concepts_for_computer_flat_list))
-        print('Counter(activated_concepts_for_baseball): ', Counter(activated_concepts_for_baseball_flat_list))   
-        print('\n\n')
-        print('')
+#     if _DEBUG_:
+#         print('activated_concepts_for_computer: ', activated_concepts_for_computer)
+#         print('activated_concepts_for_baseball: ', activated_concepts_for_baseball) 
+# 
+#         print('predict_proba: ', predict_proba)
+#         print('y_label_mapping: ', y_label_mapping)
+#         print('len(activated_concepts_for_computer): ', len(set(activated_concepts_for_computer_flat_list)))
+#         print('len(activated_concepts_for_baseball): ', len(set(activated_concepts_for_baseball_flat_list)))     
+#         print('activated_concepts_for_computer: ', set(activated_concepts_for_computer_flat_list))
+#         print('activated_concepts_for_baseball: ', set(activated_concepts_for_baseball_flat_list))  
+#         print('Counter(activated_concepts_for_computer): ', Counter(activated_concepts_for_computer_flat_list))
+#         print('Counter(activated_concepts_for_baseball): ', Counter(activated_concepts_for_baseball_flat_list))   
+#         print('\n\n')
+#         print('')
         
     return neurons_activations_np
 
 # Get Data
+
+
 X_train, X_test, y_train, y_test, X_training_keyword, \
     y_training_keyword, words, words_keywords, concepts_baseball, concepts_computer, y_label_mapping = get_data()
+
+if _DEBUG_:
+    import csv
+    with open('baseball_concepts_raw.csv', 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=',',
+                                quoting=csv.QUOTE_MINIMAL)
+        for c in concepts_baseball:
+            csvwriter.writerow(c)
+            
+    with open('computer_concepts_raw.csv', 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=',',
+                                 quoting=csv.QUOTE_MINIMAL)
+        for c in concepts_computer:
+            csvwriter.writerow(c)
+
 # Parameters for DNN
 no_of_hidden_layer = 5
 hidden_layer_sizes = get_hidden_neurons_sizes(X_train, no_of_hidden_layer=no_of_hidden_layer)
@@ -689,6 +759,26 @@ max_iter = 1
 # match concept and neurons by number and layer  
 concepts_baseball = match_ontology_concepts_with_no_of_neurons(list(hidden_layer_sizes), concepts_baseball)
 concepts_computer = match_ontology_concepts_with_no_of_neurons(list(hidden_layer_sizes), concepts_computer)
+
+if _DEBUG_:
+    import csv
+    with open('baseball_concepts_mod.csv', 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=',',
+                                quoting=csv.QUOTE_MINIMAL)
+        for c in concepts_baseball:
+            csvwriter.writerow(c)
+            
+    with open('computer_concepts_mod.csv', 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=',',
+                                 quoting=csv.QUOTE_MINIMAL)
+        for c in concepts_computer:
+            csvwriter.writerow(c)
+            
+#     print('len(concepts_baseball): ',len(concepts_baseball), '\n type(concepts_baseball): ',type(concepts_baseball))
+#     for c in concepts_baseball:
+#         print(c[0:10])
+#     print('-------')
+#     print('len(concepts_computer): ',len(concepts_computer))
 
 # train the network
 clf, activations_over_all_itr = train_network(X_train, y_train, hidden_layer_sizes=hidden_layer_sizes, max_iter=max_iter, use_cache=False, should_save=False)
