@@ -417,7 +417,8 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
     x_scale = 1
     max_neuron_for_display = 50
     x_ticks = [1,2,3,4,5]
-    x_ticks_labels = [1,2,3,4,5]
+    x_label = 'Hidden layers'
+    y_label = 'Neurons'
     # use only the max_neuron_for_display neurons semantic
     print('concepts_baseball.shape: ', concepts_baseball.shape)
     concepts_baseball = concepts_baseball[0:5,0:max_neuron_for_display]
@@ -445,8 +446,6 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
     '''figure without semantics'''
     '''for all'''
     x = np.zeros(patterns_all.shape[0] * max_neuron_for_display)
-    x_tick = np.zeros(patterns_all.shape[0] * max_neuron_for_display)
-    x_tick_label = np.zeros(patterns_all.shape[0] * max_neuron_for_display)
     y = np.zeros(patterns_all.shape[0] * max_neuron_for_display)
     s_all = np.zeros(patterns_all.shape[0] * max_neuron_for_display)    
     
@@ -457,17 +456,12 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
             x[i * max_neuron_for_display + j] = (i + 1) / x_scale
             y[i * max_neuron_for_display + j] = j + 1
             s_all[i * max_neuron_for_display + j] = neuron_n * s_scale
-            x_tick[i * max_neuron_for_display + j] = (i + 1)
-            x_tick_label[i * max_neuron_for_display + j] = (i + 1)
     ax_all.scatter(x, y, s=s_all, color=color[0])
     ax_all.set_xticks(x_ticks)
-    #ax_all.set_xticklabels([0, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5])
     
     '''figure with semantics'''
     '''for baseball'''
     x = np.zeros(patterns_baseball.shape[0] * max_neuron_for_display)
-    x_tick = np.zeros(patterns_baseball.shape[0] * max_neuron_for_display)
-    x_tick_label = np.zeros(patterns_baseball.shape[0] * max_neuron_for_display)
     y = np.zeros(patterns_baseball.shape[0] * max_neuron_for_display)
     s_baseball = np.zeros(patterns_baseball.shape[0] * max_neuron_for_display)    
     
@@ -478,11 +472,7 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
             x[i * max_neuron_for_display + j] = (i + 1) / x_scale
             y[i * max_neuron_for_display + j] = j + 1
             s_baseball[i * max_neuron_for_display + j] = neuron_n * s_scale
-            x_tick[i * max_neuron_for_display + j] = (i + 1)
-            x_tick_label[i * max_neuron_for_display + j] = (i + 1)
     ax_all_with_semantics.scatter(x, y, s=s_baseball, color=color[0])
-    #x_ticks = ['x' for x in range(1, 6, 1)]
-    # ax.set_xticklabels([1,2,3,4,5])
     
     '''annotate/attach the concepts/semantics'''
     for _x, _y, _s, _c in zip(x, y, s_baseball, concepts_baseball.flatten()):
@@ -502,8 +492,6 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
             y[i * max_neuron_for_display + j] = j + 1
             s_computer[i * max_neuron_for_display + j] = neuron_n * s_scale
     ax_all_with_semantics.scatter(x, y, s=s_computer, color=color[1])
-    #x_ticks = [x for x in range(1, 6, 1)]
-    # ax.set_xticks(x_ticks)
     
     # set xticks
     ax_all_with_semantics.set_xticks(x_ticks)
@@ -518,8 +506,6 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
             
     '''figure for test instance'''
     x = np.zeros(patterns_test_instance.shape[0] * max_neuron_for_display)
-    x_tick = np.zeros(patterns_test_instance.shape[0] * max_neuron_for_display)
-    x_tick_label = np.zeros(patterns_test_instance.shape[0] * max_neuron_for_display)
     y = np.zeros(patterns_test_instance.shape[0] * max_neuron_for_display)
     s_test_instance = np.zeros(patterns_test_instance.shape[0] * max_neuron_for_display)    
     
@@ -530,11 +516,7 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
             x[i * max_neuron_for_display + j] = (i + 1) / x_scale
             y[i * max_neuron_for_display + j] = j + 1
             s_test_instance[i * max_neuron_for_display + j] = neuron_n * s_scale
-            x_tick[i * max_neuron_for_display + j] = (i + 1)
-            x_tick_label[i * max_neuron_for_display + j] = (i + 1)
     ax_test_instance.scatter(x, y, s=s_test_instance, color=color[2])
-    #x_ticks = ['x' for x in range(1, 6, 1)]
-    # ax.set_xticklabels([1,2,3,4,5])
     ax_test_instance.set_xticks(x_ticks)
     
     '''annotate/attach the concepts/semantics'''
@@ -545,9 +527,22 @@ def plot_figure(patterns_all, patterns_baseball, concepts_baseball, patterns_com
             ax_test_instance.annotate(_c_c, xy=(_x , _y + .3), textcoords='data', color=color[1])
     
     
+    '''legends, title, axis_labels etc'''
+    ax_all.set_title('Activated neurons in DNN')
+    ax_all.set_xlabel(x_label)
+    ax_all.set_ylabel(y_label)
+    
+    ax_all_with_semantics.set_title('Semantic trace of DNN')
     ax_all_with_semantics.legend(['class baseball', 'class computer'], loc='upper left')
+    ax_all_with_semantics.set_xlabel(x_label)
+    ax_all_with_semantics.set_ylabel(y_label)
+    
     #ax_test_instance.legend(['class baseball', 'class computer'], loc='upper left')
-    ax_test_instance.set_title('Explanation for single instance')
+    ax_test_instance.set_title('Semantic trace for single instance')
+    ax_test_instance.set_xlabel(x_label)
+    ax_test_instance.set_ylabel(y_label)
+    
+    
     
 
 def display_figure():
